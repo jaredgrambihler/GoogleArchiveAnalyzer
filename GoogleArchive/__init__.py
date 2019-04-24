@@ -39,5 +39,5 @@ def analyzeData(VoiceAndAudio = False):
 #parse chrome data
 #parse maps
 #parse location history
-#number contacts?
-#look into mail - after others are done
+#number contacts
+#look into mail
