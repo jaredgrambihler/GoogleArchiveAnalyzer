@@ -18,6 +18,8 @@ def DriveHistory():
     checkDict = {'Drive', 'Products:', '&emsp;Drive', 'Details:'}
     checkList = []
     arr = common.parse('My Activity\Drive\MyActivity.html', checkDict, checkList)
+    if arr == None:
+        return None
     data = []
     for i in range(len(arr) // 4):
         currentPlace = i * 4
@@ -41,6 +43,8 @@ def YoutubeSearchHistory():
     checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
     checkList = ['a href="https://www.youtube.com/results?search_query=']
     arr = common.parse('YouTube/history/search-history.html', checkDict, checkList)
+    if arr == None:
+        return None
     data = []
     #Search, Date
     for i in range(len(arr)//2):
@@ -71,6 +75,8 @@ def YoutubeWatchHistory():
     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
     checkList = []
     arr = common.parse('YouTube\history\watch-history.html', checkDict, checkList)
+    if arr == None:
+        return None
     data = []
     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP' - length of 7
     #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP' - length of 3
@@ -128,6 +134,8 @@ def GoogleSearchHistory():
     checkDict = {'Products:', 'Search'}
     checkList = ['a href="https://www.google.com/search?q=', 'a href=']
     arr = common.parse('My Activity\Search\MyActivity.html', checkDict, checkList)
+    if arr == None:
+        return None
     data = []
     totalEntries = 0
     for i in range(len(arr)-3):

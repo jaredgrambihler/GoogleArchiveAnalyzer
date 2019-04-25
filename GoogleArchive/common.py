@@ -4,9 +4,13 @@
 import time
 
 def parse(dir, checkDict, checkList):
-    with open(dir, 'r', encoding='utf-8') as f:
-        text= f.read()
-        f.close()
+    try:
+        with open(dir, 'r', encoding='utf-8') as f:
+            text= f.read()
+            f.close()
+    except:
+        print('Error: Cannot open file for ' + dir)
+        return None
 
     def checkStr(str, checkDict):
         if('div class' in str):
