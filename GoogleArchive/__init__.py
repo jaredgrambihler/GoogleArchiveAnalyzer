@@ -36,7 +36,7 @@ def analyzeData(VoiceAndAudio = False):
         allData.extend(YoutubeWatchData)
     if GoogleSearchData:
         allData.extend(GoogleSearchData)
-    if(len(allData > 0)):
+    if(len(allData) > 0):
         graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
 
 #TODO - 
