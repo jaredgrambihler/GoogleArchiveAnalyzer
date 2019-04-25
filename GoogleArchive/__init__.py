@@ -25,17 +25,16 @@ def analyzeData(VoiceAndAudio = False):
     YoutubeWatchData = parse.YoutubeWatchHistory()
     GoogleSearchData = parse.GoogleSearchHistory()
 
-    graph.displayDataPlots(YoutubeSearchData, dir = dir)
-    graph.displayDataPlots(YoutubeWatchData, dir = dir)
-    graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
-
     allData = []
     if YoutubeSearchData:
     	allData.extend(YoutubeSearchData)
+        graph.displayDataPlots(YoutubeSearchData, dir = dir)
     if YoutubeWatchData:
         allData.extend(YoutubeWatchData)
+        graph.displayDataPlots(YoutubeWatchData, dir = dir)
     if GoogleSearchData:
         allData.extend(GoogleSearchData)
+        graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
     if(len(allData) > 0):
         graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
 
