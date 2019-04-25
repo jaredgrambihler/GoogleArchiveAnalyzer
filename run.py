@@ -6,7 +6,7 @@ def main():
     GoogleArchive.analyzeData()
     end = time.time()
     print('Finished in '+ str(end-start) + 's' )
-    input('Press any key to exit.')
+    input('Press Enter to exit.')
 
 if __name__ == '__main__':
     main()
