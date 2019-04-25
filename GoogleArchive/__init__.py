@@ -30,10 +30,14 @@ def analyzeData(VoiceAndAudio = False):
     graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
 
     allData = []
-    allData.extend(YoutubeSearchData)
-    allData.extend(YoutubeWatchData)
-    allData.extend(GoogleSearchData)
-    graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
+    if YoutubeSearchData:
+    	allData.extend(YoutubeSearchData)
+    if YoutubeWatchData:
+        allData.extend(YoutubeWatchData)
+    if GoogleSearchData:
+        allData.extend(GoogleSearchData)
+    if(len(allData > 0)):
+        graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
 
 #TODO - 
 #parse chrome data
