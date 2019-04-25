@@ -26,13 +26,13 @@ def analyzeData(VoiceAndAudio = False):
     GoogleSearchData = parse.GoogleSearchHistory()
 
     allData = []
-    if YoutubeSearchData:
-    	allData.extend(YoutubeSearchData)
+    if (YoutubeSearchData):
+        allData.extend(YoutubeSearchData)
         graph.displayDataPlots(YoutubeSearchData, dir = dir)
-    if YoutubeWatchData:
+    if (YoutubeWatchData):
         allData.extend(YoutubeWatchData)
         graph.displayDataPlots(YoutubeWatchData, dir = dir)
-    if GoogleSearchData:
+    if (GoogleSearchData):
         allData.extend(GoogleSearchData)
         graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
     if(len(allData) > 0):
