@@ -10,18 +10,23 @@ def photoURL(path, dir):
     folderErrors = 0
     fileErrors = 0
     f = open(path + dir + 'Photo_URLs.txt', 'w')
-    for folder in os.listdir('Google Photos'):
-        try: 
-            for file in os.listdir('Google Photos\\' + folder):
-                try:
-                    if 'json' in file:
-                        photoFile = open('Google Photos\\' + folder + '\\' + file)
-                        fileDict = json.loads(photoFile.read())
-                        f.write(fileDict["url"] + '\n\n')
-                except:
-                    fileErrors += 1
-        except:
-            folderErrors += 1
+    try:
+        for folder in os.listdir('Google Photos'):
+            try: 
+                for file in os.listdir('Google Photos\\' + folder):
+                    try:
+                        if 'json' in file:
+                            photoFile = open('Google Photos\\' + folder + '\\' + file)
+                            fileDict = json.loads(photoFile.read())
+                            f.write(fileDict["url"] + '\n\n')
+                    except:
+                        fileErrors += 1
+            except:
+                folderErrors += 1
+    except:
+        print('Google photo folder not found')
+    finally:
+        f.close()
 
     if(fileErrors != 0):
         print("Google Photos File Errors: " + str(fileErrors))

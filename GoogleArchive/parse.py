@@ -1,9 +1,55 @@
 #Contains All Functions for Parsing Google Files
+import time
 import GoogleArchive.common as common
 import GoogleArchive.timeConvert as timeConvert
 import GoogleArchive.graph as graph
 
 timeZone = 'PST'
+
+import time
+
+def parse(dir, checkDict, checkList):
+    try:
+        with open(dir, 'r', encoding='utf-8') as f:
+            text= f.read()
+            f.close()
+    except:
+        print('Error: Cannot open file for ' + dir)
+        return None
+
+    def checkStr(str, checkDict):
+        if('div class' in str):
+            return False
+        if ('p class' in str):
+            return False
+        for check in checkList:
+            if(check in str):
+                return False
+        htmlStrings = {'', 'body', 'br', '/p', '/div', 'b', '/b', '/a', '/body', '/html', 'a href'}
+        if str in htmlStrings:
+            return False
+        if str in checkDict:
+            return False
+        return True
+
+    text = text.split('</head>')
+    text = text[1].split('<')
+    arr = []
+
+    errorCount = -1 #-1 accounts for an empty string that will always result in one error as it cannot be split.
+    for t in text:
+        temp = t.split('>')
+        try:
+            if(checkStr(temp[0], checkDict)):
+               arr.append(temp[0])
+            if(checkStr(temp[1], checkDict)):
+                arr.append(temp[1])
+        except:
+            errorCount += 1
+    if errorCount != 0:
+        print(errorCount, "error(s) occured in parsing of " + dir + '.')
+
+    return arr
 
 def DriveHistory():
     """
@@ -17,7 +63,7 @@ def DriveHistory():
     """
     checkDict = {'Drive', 'Products:', '&emsp;Drive', 'Details:'}
     checkList = []
-    arr = common.parse('My Activity\Drive\MyActivity.html', checkDict, checkList)
+    arr = parse('My Activity\Drive\MyActivity.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -42,7 +88,7 @@ def YoutubeSearchHistory():
     """
     checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
     checkList = ['a href="https://www.youtube.com/results?search_query=']
-    arr = common.parse('YouTube/history/search-history.html', checkDict, checkList)
+    arr = parse('YouTube/history/search-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -74,7 +120,7 @@ def YoutubeWatchHistory():
 
     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
     checkList = []
-    arr = common.parse('YouTube\history\watch-history.html', checkDict, checkList)
+    arr = parse('YouTube\history\watch-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -133,7 +179,7 @@ def GoogleSearchHistory():
     """
     checkDict = {'Products:', 'Search'}
     checkList = ['a href="https://www.google.com/search?q=', 'a href=']
-    arr = common.parse('My Activity\Search\MyActivity.html', checkDict, checkList)
+    arr = parse('My Activity\Search\MyActivity.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
