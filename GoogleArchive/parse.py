@@ -1,6 +1,5 @@
 #Contains All Functions for Parsing Google Files
 import time
-import GoogleArchive.common as common
 import GoogleArchive.timeConvert as timeConvert
 import GoogleArchive.graph as graph
 
@@ -50,31 +49,6 @@ def parse(dir, checkDict, checkList):
         print(errorCount, "error(s) occured in parsing of " + dir + '.')
 
     return arr
-
-def DriveHistory():
-    """
-    Data Format
-    {
-    'Product' : 'Drive'
-    'Action' : [Action List]
-    'TimeStamp' : TimeStamp Object
-    'Details': {'FromIP': 'IP'}
-    }
-    """
-    checkDict = {'Drive', 'Products:', '&emsp;Drive', 'Details:'}
-    checkList = []
-    arr = parse('My Activity\Drive\MyActivity.html', checkDict, checkList)
-    if arr == None:
-        return None
-    data = []
-    for i in range(len(arr) // 4):
-        currentPlace = i * 4
-        data.append({'Product': 'Drive', 'Action': [], 'TimeStamp': None, 'Details': None})
-        data[i]['Action'].append(arr[currentPlace])
-        data[i]['Action'].append(arr[currentPlace + 1])
-        data[i]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 2], timeZone)
-        data[i]['Details'] = arr[currentPlace + 3][6:] # [6:] removes escape characters
-    return data
 
 def YoutubeSearchHistory():
     """

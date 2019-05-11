@@ -20,7 +20,6 @@ def analyzeData(VoiceAndAudio = False):
     purchase.getData(path, dir)
     photos.photoURL(path, dir)
 
-    DriveData = parse.DriveHistory()
     YoutubeSearchData = parse.YoutubeSearchHistory()
     YoutubeWatchData = parse.YoutubeWatchHistory()
     GoogleSearchData = parse.GoogleSearchHistory()
