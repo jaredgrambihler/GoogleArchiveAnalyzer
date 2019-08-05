@@ -13,12 +13,12 @@ else:
         raise Exception
 
 def analyzeData(VoiceAndAudio = False):
-    from GoogleArchive import parse, graph, purchase, photos
+    from GoogleArchive import parse, graph, purchase, photos, searchTerms
     if(VoiceAndAudio):
         from GoogleArchive import VoiceAndAudio #REQUIRES MUTAGEN
+    photos.photoURL(path, dir)
 
     purchase.getData(path, dir)
-    photos.photoURL(path, dir)
 
     YoutubeSearchData = parse.YoutubeSearchHistory()
     YoutubeWatchData = parse.YoutubeWatchHistory()
@@ -36,6 +36,8 @@ def analyzeData(VoiceAndAudio = False):
         graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
     if(len(allData) > 0):
         graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
+
+    searchTerms.commonSearchTerms(allData, 25, path, dir)
 
 #TODO - 
 #parse chrome data

@@ -147,7 +147,7 @@ def GoogleSearchHistory():
     {
     'Product': 'Search', 
     'Action': None, 
-    'Query (or site visited)': None,
+    'Query': None,
     'TimeStamp' : TimeStamp Object
     }
     """
