@@ -1,9 +1,9 @@
-#Google Archive Analyzer
+# Google Archive Analyzer
 This is a project in Python intended to analyze and output data regarding anyone's data from Google.
 
 Dependencies:
-Python Standard Library (os, time, json, datetime)
-Matplotlib
+ - Python Standard Library (os, time, json, datetime)
+ - Matplotlib
 
 
 To get your data, go to [https://takeout.google.com/](https://takeout.google.com/)
