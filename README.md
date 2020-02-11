@@ -29,7 +29,8 @@ Outputs include:
  - **Frequency by hour**
  - **Frequency by day of week**
  - Most common Searches
-Bold terms are shown for:
+ 
+ Bold terms are shown for:
  - Google Search
  - YouTube Watch
  - YouTube Search 
