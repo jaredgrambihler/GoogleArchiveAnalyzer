@@ -11,12 +11,12 @@ def photoURL(path, dir):
     fileErrors = 0
     f = open(path + dir + 'Photo_URLs.txt', 'w')
     try:
-        for folder in os.listdir('Google Photos'):
+        for folder in os.listdir('../Takeout/Google Photos'):
             try: 
-                for file in os.listdir('Google Photos\\' + folder):
+                for file in os.listdir('..\Takeout\Google Photos\\' + folder):
                     try:
                         if 'json' in file:
-                            photoFile = open('Google Photos\\' + folder + '\\' + file)
+                            photoFile = open('..\Takeout\Google Photos\\' + folder + '\\' + file)
                             fileDict = json.loads(photoFile.read())
                             f.write(fileDict["url"] + '\n\n')
                     except:

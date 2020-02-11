@@ -1,4 +1,4 @@
-import os
+import os #Required for creation of directory to save output to
 
 dir = '\GoogleArchiveData\\'
 path = os.getcwd()
@@ -14,10 +14,7 @@ else:
 
 def analyzeData(VoiceAndAudio = False):
     from GoogleArchive import parse, graph, purchase, photos, searchTerms
-    if(VoiceAndAudio):
-        from GoogleArchive import VoiceAndAudio #REQUIRES MUTAGEN
     photos.photoURL(path, dir)
-
     purchase.getData(path, dir)
 
     YoutubeSearchData = parse.YoutubeSearchHistory()

@@ -62,7 +62,7 @@ def YoutubeSearchHistory():
     """
     checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
     checkList = ['a href="https://www.youtube.com/results?search_query=']
-    arr = parse('YouTube/history/search-history.html', checkDict, checkList)
+    arr = parse('../Takeout/YouTube/history/search-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -94,7 +94,7 @@ def YoutubeWatchHistory():
 
     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
     checkList = []
-    arr = parse('YouTube\history\watch-history.html', checkDict, checkList)
+    arr = parse('../Takeout/YouTube/history/watch-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -151,9 +151,10 @@ def GoogleSearchHistory():
     'TimeStamp' : TimeStamp Object
     }
     """
+    searchErrors = 0 #track number of errors in data
     checkDict = {'Products:', 'Search'}
     checkList = ['a href="https://www.google.com/search?q=', 'a href=']
-    arr = parse('My Activity\Search\MyActivity.html', checkDict, checkList)
+    arr = parse('../Takeout/My Activity/Search/MyActivity.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -168,7 +169,7 @@ def GoogleSearchHistory():
                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 1], timeZone)
                 data[len(data)-1]['Type'] = arr[currentPlace + 2]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
         elif 'Visited' in arr[i] or 'Searched for' in arr[i]:
             try:
                 data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None})
@@ -177,7 +178,7 @@ def GoogleSearchHistory():
                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 2], timeZone)
                 data[len(data)-1]['Type'] = arr[currentPlace + 3]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
         elif 'Locations:' in arr[i]:
             try:
                 data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) #can update to better reflect map data
@@ -185,5 +186,6 @@ def GoogleSearchHistory():
                 data[len(data)-1]['Type'] = arr[i+1]
                 data[len(data)-1]['Query'] = arr[i+2]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
+    print(searchErrors, "errors in parsing search data")
     return data
