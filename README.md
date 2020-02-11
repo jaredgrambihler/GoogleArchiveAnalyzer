@@ -16,7 +16,7 @@ You can select to download as much or as little data as you want, but this code 
 
 Clone the repository to this same directory, so it should be as follows:
 
-someDir/Takeout
+someDir/Takeout\n
 someDir/GoogleArchiveAnalyzer
 
 By running "run.py" in GoogleArchiveAnalyzer, a folder in the same directory should be created:
