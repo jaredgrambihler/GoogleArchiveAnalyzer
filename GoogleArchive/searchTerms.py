@@ -1,6 +1,15 @@
+"""Module containing commonSearchTerms function and its helper functions"""
 
 def commonSearchTerms(searchData, numTerms, path, dir):
-    """Finds the numTerms number of most commonly searched terms across the searchData"""
+    """
+    Finds a variable number of the most commonly searched terms across all data.
+    Outputs data to a text file, Common_Searches.txt
+    Args:
+        searchData: List of dictionaries as created in parse. Used to evaluate search terms.
+        numTerms: Integer specifying the number of terms to be output
+        path: String, Path to current working directory
+        dir: String, Subdirectory to be used to store file
+    """
     searchNums = {}
     for data in searchData:
         #get search
@@ -13,7 +22,7 @@ def commonSearchTerms(searchData, numTerms, path, dir):
     topSearches = []
     for search in searchNums:
         if(len(topSearches) < numTerms): #checks if list has been fully created
-            if(len(topSearches) == 0): #first addition, no need to sort
+            if(len(topSearches) == 0):   #first addition, no need to sort
                 topSearches.append(search)
             else:
                 for i in range(len(topSearches)): 
@@ -39,10 +48,19 @@ def commonSearchTerms(searchData, numTerms, path, dir):
                 else: #if it is smaller than the first index, don't continue
                     break
     for i in range(len(topSearches)):
-        topSearches[i] = [topSearches[i], searchNums[topSearches[i]]] #adds search nums into list
+        topSearches[i] = (topSearches[i], searchNums[topSearches[i]]) #adds search nums into list
     logTopSearches(topSearches, path, dir)
 
+
 def logTopSearches(topSearches, path, dir):
+    """
+    Helper function for commonSearchTerms.
+    Saves top searches to a file as Common_Searches.txt
+    Args:
+        topSearches: List of top searches, with each entry being a tuple of the search and the frequency
+        path: path to current working directory
+        dir: path to subdirectory to store file at
+    """
     f = open(path + dir + 'Common_Searches.txt', 'w')
     f.write('Top Searches:\n')
     for search in topSearches:
@@ -51,6 +69,13 @@ def logTopSearches(topSearches, path, dir):
 
 
 def getSearch(term):
+    """
+    Helper function for commonSearchTerms.
+    Returns the search for a given term, returns None if no search term is found.
+    Handles for Youtube and Google searches.
+    Args:
+        term: A dictionary as created in parse module.
+    """
     if(term['Product'] == 'Youtube' and term['Action'] == 'Search'):
         return term['Search'].lower() #uses lower to remove case sensitivity
     elif(term['Product'] == 'Search'):

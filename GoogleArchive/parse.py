@@ -1,13 +1,26 @@
-#Contains All Functions for Parsing Google Files
-import time
-import GoogleArchive.timeConvert as timeConvert
-import GoogleArchive.graph as graph
+"""
+Contains All Functions for Parsing Google Files
+Functions:
+    YoutubeSearchHistory
+    YoutubeWatchHistory
+    GoogleSearchHistory
+    parse (Helper function)
+"""
 
-timeZone = 'PST'
+import GoogleArchive.timeConvert as timeConvert #Used to convert times found in files to TimeStamp objects
 
-import time
+timeZone = 'PST'    #time zone to be used when adjusting time entries. Should be made variable
 
 def parse(dir, checkDict, checkList):
+    """
+    Helper functions called from parsing functions for each product.
+    Prints the number of errors that occur in parsing.
+    Returns a List where entries are [String query, String Timestamp,...]
+    args:
+        dir: String of the file with its path to be opened.
+        checkDict: dictionary of exact Strings that may appear in the file that shouldn't be in the list
+        checkList: List of Strings that may appear in another string that should be ignored.
+    """
     try:
         with open(dir, 'r', encoding='utf-8') as f:
             text= f.read()
@@ -50,15 +63,17 @@ def parse(dir, checkDict, checkList):
 
     return arr
 
+
 def YoutubeSearchHistory():
     """
-    Data Format
-    {
-    'Product' : 'Youtube'
-     'Action' : 'Search'
-     'TimeStamp' : TimeStamp Object
-     'Search' : 'Search Queury'
-     }
+    Parses Youtube Search History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product' : 'Youtube'
+         'Action' : 'Search'
+         'TimeStamp' : TimeStamp Object
+         'Search' : 'Search Queury'
+         }
     """
     checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
     checkList = ['a href="https://www.youtube.com/results?search_query=']
@@ -76,16 +91,17 @@ def YoutubeSearchHistory():
 
 def YoutubeWatchHistory():
     """
-    Data Format:
-    {
-    'Product': 'Youtube',
-    'Action': 'Watch',
-    'TimeStamp': TimeStamp Object,
-    'VideoLink': None,
-    'VideoName': None,
-    'ChannelLink': None,
-    'ChannelName': None
-    }
+    Parses Youtube Watch History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product': 'Youtube',
+        'Action': 'Watch',
+        'TimeStamp': TimeStamp Object,
+        'VideoLink': None,
+        'VideoName': None,
+        'ChannelLink': None,
+        'ChannelName': None
+        }
     """
     #FILE FORMAT: (3 Possible scenarios)
     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
@@ -143,13 +159,14 @@ def YoutubeWatchHistory():
 
 def GoogleSearchHistory():
     """
-    Data Format
-    {
-    'Product': 'Search', 
-    'Action': None, 
-    'Query': None,
-    'TimeStamp' : TimeStamp Object
-    }
+    Parses Google Search History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product': 'Search', 
+        'Action': None, 
+        'Query': None,
+        'TimeStamp' : TimeStamp Object
+        }
     """
     searchErrors = 0 #track number of errors in data
     checkDict = {'Products:', 'Search'}
@@ -189,3 +206,14 @@ def GoogleSearchHistory():
                 searchErrors += 1
     print(searchErrors, "errors in parsing search data")
     return data
+
+"""
+  ___      ___
+ /   \    /   \
+ \ <3 \__/ <3 /
+  \   code   /
+   \ feb 14 /
+    \ 2020 /
+     \    /
+      \__/
+ """

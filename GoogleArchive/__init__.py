@@ -1,4 +1,10 @@
+"""
+Initial setup done here.
+Creates a directory to store data in if it doesn't already exist
+"""
+
 import os #Required for creation of directory to save output to
+from GoogleArchive import parse, graph, purchase, photos, searchTerms #import other parts of package to be used
 
 dir = '\GoogleArchiveData\\'
 path = os.getcwd()
@@ -12,8 +18,13 @@ else:
         print('Error in creating folder.')
         raise Exception
 
-def analyzeData(VoiceAndAudio = False):
-    from GoogleArchive import parse, graph, purchase, photos, searchTerms
+
+def analyzeData():
+    """
+    Function run to do analysis of all data.
+    Runs analysis of PhotoURL, Purchase Data
+    Youtube search and watch, and google search
+    """
     photos.photoURL(path, dir)
     purchase.getData(path, dir)
 
@@ -41,4 +52,4 @@ def analyzeData(VoiceAndAudio = False):
 #parse maps
 #parse location history
 #number contacts
-#look into mail
+#mail
