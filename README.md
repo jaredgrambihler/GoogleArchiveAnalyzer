@@ -1,9 +1,9 @@
-#Google Archive Analyzer
+# Google Archive Analyzer
 This is a project in Python intended to analyze and output data regarding anyone's data from Google.
 
 Dependencies:
-Python Standard Library (os, time, json, datetime)
-Matplotlib
+ - Python Standard Library (os, time, json, datetime)
+ - Matplotlib
 
 
 To get your data, go to [https://takeout.google.com/](https://takeout.google.com/)
@@ -17,6 +17,7 @@ You can select to download as much or as little data as you want, but this code 
 Clone the repository to this same directory, so it should be as follows:
 
 someDir/Takeout
+
 someDir/GoogleArchiveAnalyzer
 
 By running "run.py" in GoogleArchiveAnalyzer, a folder in the same directory should be created:
@@ -29,7 +30,8 @@ Outputs include:
  - **Frequency by hour**
  - **Frequency by day of week**
  - Most common Searches
-Bold terms are shown for:
+ 
+ Bold terms are shown for:
  - Google Search
  - YouTube Watch
  - YouTube Search 
