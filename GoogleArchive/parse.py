@@ -120,7 +120,13 @@ def YoutubeWatchHistory():
     for i in range(len(arr)):
         currentEntry = []
         if( arr[i] == 'YouTube'): #indicates start of a new entry
-            data.append({'Product': 'Youtube', 'Action': 'Watch', 'TimeStamp': None, 'VideoLink': None, 'VideoName': None, 'ChannelLink': None, 'ChannelName': None})
+            data.append({'Product': 'Youtube',
+                        'Action': 'Watch',
+                        'TimeStamp': None,
+                        'VideoLink': None,
+                        'VideoName': None,
+                        'ChannelLink': None,
+                        'ChannelName': None})
             j = 1
             while ( i+j < len(arr) and arr[i+j] != 'YouTube'): #goes until next entry
                 currentEntry.append(arr[i+j])
@@ -198,7 +204,7 @@ def GoogleSearchHistory():
                 searchErrors += 1
         elif 'Locations:' in arr[i]:
             try:
-                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) #can update to better reflect map data
+                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) 
                 data[len(data)-1]['Action'] = arr[i]
                 data[len(data)-1]['Type'] = arr[i+1]
                 data[len(data)-1]['Query'] = arr[i+2]
@@ -206,14 +212,3 @@ def GoogleSearchHistory():
                 searchErrors += 1
     print(searchErrors, "errors in parsing search data")
     return data
-
-"""
-  ___      ___
- /   \    /   \
- \ <3 \__/ <3 /
-  \   code   /
-   \ feb 14 /
-    \ 2020 /
-     \    /
-      \__/
- """
