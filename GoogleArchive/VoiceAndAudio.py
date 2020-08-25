@@ -2,9 +2,10 @@
 Module that gives data on the Voice and Audio data from a Google Archive. Prodivides the number of files and the time required to listen to all of them.
 If errors are encountered with the files, the number of error files will be printed. Requires mutagen package to run.
 """
-#dependent on mutagen
-#dependent on all google audio files being of the mp3 format
-#could add in time chart
+# dependent on mutagen
+# dependent on all google audio files being of the mp3 format
+# could add in time chart
+
 import os, time, datetime
 from mutagen.mp3 import MP3
 import matplotlib.pyplot as plt

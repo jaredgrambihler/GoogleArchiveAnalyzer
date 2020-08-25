@@ -50,7 +50,7 @@ def parse(dir, checkDict, checkList):
 
     return arr
 
-def YoutubeSearchHistory():
+def YoutubeSearchHistory(takeoutPath):
     """
     Data Format
     {
@@ -62,7 +62,7 @@ def YoutubeSearchHistory():
     """
     checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
     checkList = ['a href="https://www.youtube.com/results?search_query=']
-    arr = parse('YouTube/history/search-history.html', checkDict, checkList)
+    arr = parse(takeoutPath + 'YouTube/history/search-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -74,7 +74,7 @@ def YoutubeSearchHistory():
         data[i]['TimeStamp'] = timeConvert.TimeStamp(arr[arrPlace + 1], timeZone)
     return data
 
-def YoutubeWatchHistory():
+def YoutubeWatchHistory(takeoutPath):
     """
     Data Format:
     {
@@ -94,7 +94,7 @@ def YoutubeWatchHistory():
 
     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
     checkList = []
-    arr = parse('YouTube\history\watch-history.html', checkDict, checkList)
+    arr = parse(takeoutPath + 'YouTube\history\watch-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -141,7 +141,7 @@ def YoutubeWatchHistory():
                 print('Error in Youtube Watch Data for len(2). Error Data:', arr[i:i+4], '\n')
     return data
 
-def GoogleSearchHistory():
+def GoogleSearchHistory(takeoutPath):
     """
     Data Format
     {
@@ -153,7 +153,7 @@ def GoogleSearchHistory():
     """
     checkDict = {'Products:', 'Search'}
     checkList = ['a href="https://www.google.com/search?q=', 'a href=']
-    arr = parse('My Activity\Search\MyActivity.html', checkDict, checkList)
+    arr = parse(takeoutPath + 'My Activity\Search\MyActivity.html', checkDict, checkList)
     if arr == None:
         return None
     data = []

@@ -1,4 +1,5 @@
 import os
+from . import parse, graph, purchase, photos, searchTerms
 
 dir = '\GoogleArchiveData\\'
 path = os.getcwd()
@@ -12,17 +13,16 @@ else:
         print('Error in creating folder.')
         raise Exception
 
-def analyzeData(VoiceAndAudio = False):
-    from GoogleArchive import parse, graph, purchase, photos, searchTerms
+def analyzeData(takeoutPath = "", VoiceAndAudio = False):
     if(VoiceAndAudio):
-        from GoogleArchive import VoiceAndAudio #REQUIRES MUTAGEN
+        from . import VoiceAndAudio # REQUIRES MUTAGEN
     photos.photoURL(path, dir)
 
     purchase.getData(path, dir)
 
-    YoutubeSearchData = parse.YoutubeSearchHistory()
-    YoutubeWatchData = parse.YoutubeWatchHistory()
-    GoogleSearchData = parse.GoogleSearchHistory()
+    YoutubeSearchData = parse.YoutubeSearchHistory(takeoutPath)
+    YoutubeWatchData = parse.YoutubeWatchHistory(takeoutPath)
+    GoogleSearchData = parse.GoogleSearchHistory(takeoutPath)
 
     allData = []
     if (YoutubeSearchData):
