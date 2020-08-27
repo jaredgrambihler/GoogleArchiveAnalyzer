@@ -18,23 +18,28 @@ else:
         print('Error in creating folder.')
         raise Exception
 
-def analyzeData(takeoutPath = "", VoiceAndAudio = False):
-    if(VoiceAndAudio):
-        from . import VoiceAndAudio # REQUIRES MUTAGEN
-    photos.photoURL(path, dir)
-
 def analyzeData(takeoutPath = ""):
-    """
-    Function run to do analysis of all data.
+    """Do analysis of all data.
+
     Runs analysis of PhotoURL, Purchase Data
     Youtube search and watch, and google search
+
+    Args:
+        takeoutPath (str): Relative path to takeout folder
     """
     photos.photoURL(path, dir)
     purchase.getData(path, dir)
 
+    import time
+    start = time.time()
     YoutubeSearchData = parse.YoutubeSearchHistory(takeoutPath)
+    print("Took {}s to parse youtube search".format(time.time() - start))
+    start = time.time()
     YoutubeWatchData = parse.YoutubeWatchHistory(takeoutPath)
+    print("Took {}s to parse youtube watch".format(time.time() - start))
+    start = time.time()
     GoogleSearchData = parse.GoogleSearchHistory(takeoutPath)
+    print("Took {}s to parse google search".format(time.time() - start))
 
     allData = []
     if (YoutubeSearchData):

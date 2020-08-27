@@ -2,6 +2,7 @@
 # %%
 from __future__ import annotations  # We need this to use Tag type in Tag class
 import re
+import os
 
 from typing import Sequence, Optional
 
@@ -115,6 +116,38 @@ class Tag:
             for x in child:
                 yield x
 
+    def getTagsByName(self, tagName: str) -> Sequence[Tag]:
+        """Gets tag by their tag name.
+
+        Args:
+            tagName (str): name of the tags to get
+
+        Returns:
+            Sequence of tags with the tag name that are within the current tag.
+            The order is based on a depth first search through the tags.
+        """
+        tags = []
+        for tag in self:
+            if tag.name == tagName:
+                tags.append(tag)
+        return tags
+
+    def getTagsByClass(self, className: str) -> Sequence[Tag]:
+        """Get tags with the given className.
+
+        Args:
+            className (str): the className of tags to get
+        
+        Returns:
+            Sequence of tags with that className that are within the current
+            tag. The order is based on a depth first search through the tags.
+        """
+        tags = []
+        for tag in self:
+            if tag.className == className:
+                tags.append(tag)
+        return tags
+
 def _generateTags(tags: Sequence[str], texts: Sequence[str]) -> None:
     """Generate the tag structure based on parsed tags and texts.
 
@@ -179,7 +212,12 @@ def loadHTML(path: str) -> Tag:
     
     Returns:
         Tag which is the head tag of the HTML document
+
+    Raises:
+        ValueError: if the given path doesn't exist
     """
+    if not os.path.exists(path):
+        raise ValueError("The given path {} does not exist".format(path))
     with open(path, 'r', encoding="UTF-8") as f:
         htmlString = f.read()
     return generateTags(htmlString)

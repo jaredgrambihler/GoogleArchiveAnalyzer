@@ -28,8 +28,8 @@ def getWeeks(data):
     return weeks
 
 class TimeStamp:
-    """
-    Timestamp class used to convert time from original Strings in google files
+    """Timestamp class used to convert time from original Strings in google files.
+    
     Data:
          month
          day

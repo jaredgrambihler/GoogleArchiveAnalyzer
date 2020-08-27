@@ -7,168 +7,46 @@ Functions:
     parse (Helper function)
 """
 # %%
+from typing import Sequence
+
 from . import timeConvert #Used to convert times found in files to TimeStamp objects
 from ._htmlParse import Tag, loadHTML
 
-timeZone = 'PST'    #time zone to be used when adjusting time entries. Should be made variable
+# TODO - add ability to set time zone
+"""Time zone to be used when adjusting time entries."""
+_TIME_ZONE = 'PST'    
 
-def parse(dir, checkDict, checkList):
-    """
-    Helper functions called from parsing functions for each product.
-    Prints the number of errors that occur in parsing.
-    Returns a List where entries are [String query, String Timestamp,...]
-    args:
-        dir: String of the file with its path to be opened.
-        checkDict: dictionary of exact Strings that may appear in the file that shouldn't be in the list
-        checkList: List of Strings that may appear in another string that should be ignored.
-    """
-    try:
-        with open(dir, 'r', encoding='utf-8') as f:
-            text= f.read()
-            f.close()
-    except:
-        print('Error: Cannot open file for ' + dir)
-        return None
+"""The Div class name for the elements. Each entry of search, watch, etc. is within this."""
+_ELEMENT_DIV_CLASS = 'outer-cell mdl-cell mdl-cell--12-col mdl-shadow--2dp'
 
-    def checkStr(str, checkDict):
-        if('div class' in str):
-            return False
-        if ('p class' in str):
-            return False
-        for check in checkList:
-            if(check in str):
-                return False
-        htmlStrings = {'', 'body', 'br', '/p', '/div', 'b', '/b', '/a', '/body', '/html', 'a href'}
-        if str in htmlStrings:
-            return False
-        if str in checkDict:
-            return False
-        return True
+"""Contains information about the action and what it was.
 
-    text = text.split('</head>')
-    text = text[1].split('<')
-    arr = []
+This could be seomthing such as search, watch, as well as the link, channel, etc.
+"""
+_ACTION_CLASS = 'content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1'
 
-    errorCount = -1 #-1 accounts for an empty string that will always result in one error as it cannot be split.
-    for t in text:
-        temp = t.split('>')
-        try:
-            if(checkStr(temp[0], checkDict)):
-               arr.append(temp[0])
-            if(checkStr(temp[1], checkDict)):
-                arr.append(temp[1])
-        except:
-            errorCount += 1
-    if errorCount != 0:
-        print(errorCount, "error(s) occured in parsing of " + dir + '.')
+"""Used for the title of an element, based on product name"""
+_TITLE_CLASS = 'mdl-typography--title'
 
-    return arr
+"""Holds information such as prodcut, location, etc."""
+_INFORMATION_CLASS = 'content-cell mdl-cell mdl-cell--12-col mdl-typography--caption'
 
 def YoutubeSearchHistory(takeoutPath):
-    """
-    Parses Youtube Search History and returns a list that contains dictionaries for each entry found.
-    Each dictionary in the list is of the following format:
-        {
-        'Product' : 'Youtube'
-         'Action' : 'Search'
-         'TimeStamp' : TimeStamp Object
-         'Search' : 'Search Queury'
-         }
-    """
-    checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', 'Details:', '&emsp;YouTube', '&emsp;From Google Ads', "YouTube"}
-    checkList = ['a href="https://www.youtube.com/results?search_query=', 'a href=', 'https://www.']
-    arr = parse(takeoutPath + '/YouTube and Youtube Music/history/search-history.html', checkDict, checkList)
-    if arr == None:
-        return None
+    path = takeoutPath + '/YouTube and Youtube Music/history/search-history.html'
+    elements = _getElementDivClass(loadHTML(path))
     data = []
-    #Search, Date
-    for i in range(len(arr)//2):
-        arrPlace = 2 * i
-        data.append( {'Product': 'Youtube', 'Action': 'Search', 'TimeStamp': None, 'Search': None} )
-        data[i]['Search'] = arr[arrPlace]
-        data[i]['TimeStamp'] = timeConvert.TimeStamp(arr[arrPlace + 1], timeZone)
+    errors = 0
+    for element in elements:
+        try:
+            data.append(_createSearchDataFromElement(element))
+        except ValueError:
+            errors += 1
+    print("Encountered {} errors in parsing Youtube Search History".format(errors))
     return data
-
-# def YoutubeWatchHistory(takeoutPath):
-#     """
-#     Parses Youtube Watch History and returns a list that contains dictionaries for each entry found.
-#     Each dictionary in the list is of the following format:
-#         {
-#         'Product': 'Youtube',
-#         'Action': 'Watch',
-#         'TimeStamp': TimeStamp Object,
-#         'VideoLink': None,
-#         'VideoName': None,
-#         'ChannelLink': None,
-#         'ChannelName': None
-#         }
-#     """
-#     #FILE FORMAT: (3 Possible scenarios)
-#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
-#     #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
-#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
-
-#     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
-#     checkList = []
-#     arr = parse(takeoutPath + '/YouTube and Youtube Music/history/watch-history.html', checkDict, checkList)
-#     if arr == None:
-#         return None
-#     data = []
-#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP' - length of 7
-#     #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP' - length of 3
-#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP' - length of 5
-#     for i in range(len(arr)):
-#         currentEntry = []
-#         if( arr[i] == 'YouTube'): #indicates start of a new entry
-#             data.append({'Product': 'Youtube',
-#                         'Action': 'Watch',
-#                         'TimeStamp': None,
-#                         'VideoLink': None,
-#                         'VideoName': None,
-#                         'ChannelLink': None,
-#                         'ChannelName': None})
-#             j = 1
-#             while ( i+j < len(arr) and arr[i+j] != 'YouTube'): #goes until next entry
-#                 currentEntry.append(arr[i+j])
-#                 j += 1
-#         if (len(currentEntry) == 6): #lengths here are shortened by 1 as 'Youtube' is not appended to the currentEntry 
-#             #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP'
-#             try:
-#                 data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
-#                 data[len(data)-1]['VideoName'] = arr[i+3]
-#                 data[len(data)-1]['ChannelLink'] = arr[i+4]
-#                 data[len(data)-1]['ChannelName'] = arr[i+5]
-#                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+6], timeZone)
-#             except:
-#                 print('Error in Youtube Watch Data for len(6). Error Data:', arr[i:i+8], '\n')
-#         elif(len(currentEntry) == 4):
-#             #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP'
-#             #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'Deleted video', 'a href="YOUTUBE CHANNEL LINK"'
-#             #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'YouTube video name', 'a href="YOUTUBE CHANNEL LINK"'
-#             try:
-#                 if(arr[i+4] == 'a href="https://www.youtube.com/channel/UCBR8-60-B28hp2BmDPdntcQ"'):
-#                     data[len(data)-1]['VideoName'] = arr[i+3]
-#                     data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
-#                 else:
-#                     data[len(data)-1]['VideoLink'] = arr[i+3]
-#                     data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+4], timeZone)
-#             except:
-#                 print('Error in Youtube Watch Data for len(4). Error Data:', arr[i:i+6], '\n')
-#         elif(len(currentEntry) == 2):
-#             #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP'
-#             try:
-#                 data[len(data)-1]['VideoName'] = 'Watched a video that has been removed'
-#                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+2], timeZone)
-#             except:
-#                 print('Error in Youtube Watch Data for len(2). Error Data:', arr[i:i+4], '\n')
-#     return data
 
 def YoutubeWatchHistory(takeoutPath):
     path = takeoutPath + '/YouTube and Youtube Music/history/watch-history.html'
-    # This target class could be changed by Google
-    # Good place to check if this breaks in the future
-    targetTagClass = 'content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1'
-    elements = [tag for tag in loadHTML(path) if tag.className == targetTagClass]
+    elements = [tag for tag in loadHTML(path) if tag.className == _ACTION_CLASS]
     data = []
     for element in elements:
         elementDict = {'Product': 'Youtube',
@@ -180,7 +58,7 @@ def YoutubeWatchHistory(takeoutPath):
                        'ChannelName': None
                        }
         tags = element.children
-        elementDict["TimeStamp"] = timeConvert.TimeStamp(tags[-1].text, timeZone)
+        elementDict["TimeStamp"] = timeConvert.TimeStamp(tags[-1].text, _TIME_ZONE)
         # We only need the other tags for timestamp
         # If we have both the video link and the channel, there are two a tags.
         # If the video is private or removed, we will have one or zero tags
@@ -194,51 +72,85 @@ def YoutubeWatchHistory(takeoutPath):
     return data
 
 def GoogleSearchHistory(takeoutPath):
-    """
-    Parses Google Search History and returns a list that contains dictionaries for each entry found.
-    Each dictionary in the list is of the following format:
-        {
-        'Product': 'Search', 
-        'Action': None, 
-        'Query': None,
-        'TimeStamp' : TimeStamp Object
-        }
-    """
-    searchErrors = 0 #track number of errors in data
-    checkDict = {'Products:', 'Search'}
-    checkList = ['a href="https://www.google.com/search?q=', 'a href=']
-    arr = parse(takeoutPath + '/My Activity/Search/MyActivity.html', checkDict, checkList)
-    if arr == None:
-        return None
+    path = takeoutPath + '/My Activity/Search/MyActivity.html'
+    elements = _getElementDivClass(loadHTML(path))
     data = []
-    totalEntries = 0
-    for i in range(len(arr)-3):
-        currentPlace = i
-        totalEntries += 1
-        if 'Searched for\xa0hotels' in arr[i]:
-            try:
-                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None})
-                data[len(data)-1]['Action'] = arr[currentPlace]
-                data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 1], timeZone)
-                data[len(data)-1]['Type'] = arr[currentPlace + 2]
-            except:
-                searchErrors += 1
-        elif 'Visited' in arr[i] or 'Searched for' in arr[i]:
-            try:
-                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None})
-                data[len(data)-1]['Action'] = arr[currentPlace] #eliminates \xa0
-                data[len(data)-1]['Query'] = arr[currentPlace + 1]
-                data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 2], timeZone)
-                data[len(data)-1]['Type'] = arr[currentPlace + 3]
-            except:
-                searchErrors += 1
-        elif 'Locations:' in arr[i]:
-            try:
-                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) 
-                data[len(data)-1]['Action'] = arr[i]
-                data[len(data)-1]['Type'] = arr[i+1]
-                data[len(data)-1]['Query'] = arr[i+2]
-            except:
-                searchErrors += 1
-    print(searchErrors, "errors in parsing search data")
+    errors = 0
+    for x in elements:
+        try:
+            data.append(_createSearchDataFromElement(x))
+        except ValueError:
+            errors += 1
+    print("{} errors in parsing Google Search History".format(errors))
     return data
+
+def _getElementDivClass(headTag: Tag) -> Sequence[Tag]:
+    return headTag.getTagsByClass(_ELEMENT_DIV_CLASS)
+
+def _createSearchDataFromElement(element: Tag) -> dict:
+    """Create search data dict from the given element tag.
+
+    Args:
+        element (Tag): the tag of the element. Should be of the _ELEMENT_DIV_CLASS
+            class
+
+    Returns:
+        dict for the given element
+
+    Raises:
+        ValueError: if the given element is not of _ELEMENT_DIV_CLASS, or if there
+            is more than one element for the given action
+    """
+    if element.className != _ELEMENT_DIV_CLASS:
+        raise ValueError("element is not of the class {}".format(_ELEMENT_DIV_CLASS))
+    data = element.getTagsByClass(_ACTION_CLASS)
+    if len(data) == 1:
+        data = data[0]
+    else:
+        raise ValueError("The given tag has more than one element for the action.")
+    timeStamp = timeConvert.TimeStamp(data.children[-1].text, _TIME_ZONE)
+    action = data.text.split("\xa0")[0]
+    searchLinks = data.getTagsByName("a")
+
+    if len(searchLinks) == 1:
+        query = searchLinks[0].text
+    elif len(searchLinks) == 0:
+        query = data.text.split("\xa0")[1]
+    else:
+        raise ValueError("element given does not have appropriate length for links")
+
+    product = _getProductFromTag(element)
+
+    return {
+            'Product': product, 
+            'Action': action, 
+            'Query': query,
+            'TimeStamp' : timeStamp
+            }
+
+def _getProductFromTag(tag: Tag) -> str:
+    """Get a product name from a tag.
+
+    Looks for the 'mdl-typography--title' class.
+    Assumes we are at an element where only one of these tags exists.
+
+    Args:
+        tag (Tag): either the tag of the title or a parent tag of the title
+    
+    Returns:
+        the title as a string
+
+    Raises:
+        ValueError: if the tag we give isn't of the title class and doesn't have
+            a number of titleTags equal to 1.
+    """
+    # TODO - check that text isn't empy
+    if tag.className == _TITLE_CLASS:
+        return tag.text
+    else:
+        titleTags = tag.getTagsByClass(_TITLE_CLASS)
+        if len(titleTags) == 1:
+            return titleTags[0].text
+        else:
+            raise ValueError("The given tag contained {} title tags, but it \
+                              should have exactly one".format(len(titleTags)))
