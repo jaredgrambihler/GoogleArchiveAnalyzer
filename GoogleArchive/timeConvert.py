@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-import datetime
+import datetime #Needed to convert TimeStamp object to datetime object
 
-timeZones = {'PST' : -3, 'MT': -2, 'CT': -1, 'EST':0, 'UTC': 5}
+timeZones = {'PST' : -3, 'MT': -2, 'CT': -1, 'EST':0, 'UTC': 5} #Used to convert time zones, base is EST
 
 def getHours(data):
     """
-    takes in a list of data (dicts of search data) and the time zone, converts into appropriate 24 hour time format.
-    Currently returns only hours.
+    Returns a list of hours for a given list of data.
+    Args:
+        Data: List of dictionaries. Dictionaries need 'TimeStamp' as a key to a TimeStamp object.
     """
     times = []
     for search in data:
@@ -15,6 +15,12 @@ def getHours(data):
     return times
 
 def getWeeks(data):
+    """
+    Returns a list of weekdays as defined by datetime. 
+    Each entry is an int where Monday is 0, Sunday is 6.
+    Args:
+        Data: List of dictionaries. Dictionaries need 'TimeStamp' as a key to a TimeStamp object.
+    """
     weeks = []
     for item in data:
         if (item['TimeStamp'] != None):
@@ -22,8 +28,27 @@ def getWeeks(data):
     return weeks
 
 class TimeStamp:
+    """
+    Timestamp class used to convert time from original Strings in google files
+    Data:
+         month
+         day
+         year
+         timeZone
+         hour
+         minute
+         second
+    """
 
     def __init__(self, timeString, timeZone):
+        """
+        Sole constructor for the class.
+        Creates object and sets time zone to be correct.
+        Args:
+            timeString: String of the time as represented in Google documents.
+            timeZone: String representing time zone to adjust data to. Can be 'PST', 'MT', 'CT', 'EST', or 'UTC'
+        """
+        #Example of input String and format
         #Jan 11, 2015, 11:21:12 PM EDT
         #"%b %-d, %Y, %-I:%M:%S %p %Z"
         self.timeZone = timeZone
@@ -41,6 +66,11 @@ class TimeStamp:
         self.adjustTimeZone()
 
     def adjustTimeZone(self):
+        """
+        Adjusts time zone of data to specified time zone.
+        Adjusts time to be on 24 hour scale based on meridiem.
+        Returns the adjusted hour.
+        """
         if(self.meridiem == "PM" and self.hour != 12):
             self.hour += 12
         elif(self.meridiem == "AM" and self.hour == 12):
@@ -53,6 +83,12 @@ class TimeStamp:
         return self.hour
 
     def toDateTime(self, interval = 'day'):
+        """
+        Returns a datetime object with the same year, month, day attributes as the current object.
+        Args:
+            interval (optional): 'day' by default. Can be 'month' or 'year'.
+                Using 'month' set day field to 1, using 'year' sets day and month fields to 1
+        """
         month = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4,'May':5,'Jun':6,'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
         if interval == 'day':
             return datetime.datetime(self.year, month[self.month], self.day)

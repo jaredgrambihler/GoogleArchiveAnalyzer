@@ -1,13 +1,26 @@
-#Contains All Functions for Parsing Google Files
-import time
-import GoogleArchive.timeConvert as timeConvert
-import GoogleArchive.graph as graph
+"""
+Contains All Functions for Parsing Google Files
+Functions:
+    YoutubeSearchHistory
+    YoutubeWatchHistory
+    GoogleSearchHistory
+    parse (Helper function)
+"""
 
-timeZone = 'PST'
+from . import timeConvert #Used to convert times found in files to TimeStamp objects
 
-import time
+timeZone = 'PST'    #time zone to be used when adjusting time entries. Should be made variable
 
 def parse(dir, checkDict, checkList):
+    """
+    Helper functions called from parsing functions for each product.
+    Prints the number of errors that occur in parsing.
+    Returns a List where entries are [String query, String Timestamp,...]
+    args:
+        dir: String of the file with its path to be opened.
+        checkDict: dictionary of exact Strings that may appear in the file that shouldn't be in the list
+        checkList: List of Strings that may appear in another string that should be ignored.
+    """
     try:
         with open(dir, 'r', encoding='utf-8') as f:
             text= f.read()
@@ -52,17 +65,18 @@ def parse(dir, checkDict, checkList):
 
 def YoutubeSearchHistory(takeoutPath):
     """
-    Data Format
-    {
-    'Product' : 'Youtube'
-     'Action' : 'Search'
-     'TimeStamp' : TimeStamp Object
-     'Search' : 'Search Queury'
-     }
+    Parses Youtube Search History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product' : 'Youtube'
+         'Action' : 'Search'
+         'TimeStamp' : TimeStamp Object
+         'Search' : 'Search Queury'
+         }
     """
-    checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', '&emsp;YouTube', "YouTube"}
-    checkList = ['a href="https://www.youtube.com/results?search_query=']
-    arr = parse(takeoutPath + 'YouTube/history/search-history.html', checkDict, checkList)
+    checkDict = {'Searched for\xa0', 'www.youtube.com', 'Products:', 'Details:', '&emsp;YouTube', '&emsp;From Google Ads', "YouTube"}
+    checkList = ['a href="https://www.youtube.com/results?search_query=', 'a href=', 'https://www.']
+    arr = parse(takeoutPath + '/YouTube and Youtube Music/history/search-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -76,16 +90,17 @@ def YoutubeSearchHistory(takeoutPath):
 
 def YoutubeWatchHistory(takeoutPath):
     """
-    Data Format:
-    {
-    'Product': 'Youtube',
-    'Action': 'Watch',
-    'TimeStamp': TimeStamp Object,
-    'VideoLink': None,
-    'VideoName': None,
-    'ChannelLink': None,
-    'ChannelName': None
-    }
+    Parses Youtube Watch History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product': 'Youtube',
+        'Action': 'Watch',
+        'TimeStamp': TimeStamp Object,
+        'VideoLink': None,
+        'VideoName': None,
+        'ChannelLink': None,
+        'ChannelName': None
+        }
     """
     #FILE FORMAT: (3 Possible scenarios)
     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
@@ -94,7 +109,7 @@ def YoutubeWatchHistory(takeoutPath):
 
     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
     checkList = []
-    arr = parse(takeoutPath + 'YouTube\history\watch-history.html', checkDict, checkList)
+    arr = parse(takeoutPath + '/YouTube and Youtube Music/history/watch-history.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -104,7 +119,13 @@ def YoutubeWatchHistory(takeoutPath):
     for i in range(len(arr)):
         currentEntry = []
         if( arr[i] == 'YouTube'): #indicates start of a new entry
-            data.append({'Product': 'Youtube', 'Action': 'Watch', 'TimeStamp': None, 'VideoLink': None, 'VideoName': None, 'ChannelLink': None, 'ChannelName': None})
+            data.append({'Product': 'Youtube',
+                        'Action': 'Watch',
+                        'TimeStamp': None,
+                        'VideoLink': None,
+                        'VideoName': None,
+                        'ChannelLink': None,
+                        'ChannelName': None})
             j = 1
             while ( i+j < len(arr) and arr[i+j] != 'YouTube'): #goes until next entry
                 currentEntry.append(arr[i+j])
@@ -143,17 +164,19 @@ def YoutubeWatchHistory(takeoutPath):
 
 def GoogleSearchHistory(takeoutPath):
     """
-    Data Format
-    {
-    'Product': 'Search', 
-    'Action': None, 
-    'Query': None,
-    'TimeStamp' : TimeStamp Object
-    }
+    Parses Google Search History and returns a list that contains dictionaries for each entry found.
+    Each dictionary in the list is of the following format:
+        {
+        'Product': 'Search', 
+        'Action': None, 
+        'Query': None,
+        'TimeStamp' : TimeStamp Object
+        }
     """
+    searchErrors = 0 #track number of errors in data
     checkDict = {'Products:', 'Search'}
     checkList = ['a href="https://www.google.com/search?q=', 'a href=']
-    arr = parse(takeoutPath + 'My Activity\Search\MyActivity.html', checkDict, checkList)
+    arr = parse(takeoutPath + '/My Activity/Search/MyActivity.html', checkDict, checkList)
     if arr == None:
         return None
     data = []
@@ -168,7 +191,7 @@ def GoogleSearchHistory(takeoutPath):
                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 1], timeZone)
                 data[len(data)-1]['Type'] = arr[currentPlace + 2]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
         elif 'Visited' in arr[i] or 'Searched for' in arr[i]:
             try:
                 data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None})
@@ -177,13 +200,14 @@ def GoogleSearchHistory(takeoutPath):
                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[currentPlace + 2], timeZone)
                 data[len(data)-1]['Type'] = arr[currentPlace + 3]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
         elif 'Locations:' in arr[i]:
             try:
-                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) #can update to better reflect map data
+                data.append({'Product': 'Search', 'Action': None, 'Query': None, 'TimeStamp': None, 'Type': None}) 
                 data[len(data)-1]['Action'] = arr[i]
                 data[len(data)-1]['Type'] = arr[i+1]
                 data[len(data)-1]['Query'] = arr[i+2]
             except:
-                print(arr[i], arr[i-3:i+4])
+                searchErrors += 1
+    print(searchErrors, "errors in parsing search data")
     return data
