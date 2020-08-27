@@ -6,8 +6,9 @@ Functions:
     GoogleSearchHistory
     parse (Helper function)
 """
-
+# %%
 from . import timeConvert #Used to convert times found in files to TimeStamp objects
+from ._htmlParse import Tag, loadHTML
 
 timeZone = 'PST'    #time zone to be used when adjusting time entries. Should be made variable
 
@@ -88,78 +89,108 @@ def YoutubeSearchHistory(takeoutPath):
         data[i]['TimeStamp'] = timeConvert.TimeStamp(arr[arrPlace + 1], timeZone)
     return data
 
-def YoutubeWatchHistory(takeoutPath):
-    """
-    Parses Youtube Watch History and returns a list that contains dictionaries for each entry found.
-    Each dictionary in the list is of the following format:
-        {
-        'Product': 'Youtube',
-        'Action': 'Watch',
-        'TimeStamp': TimeStamp Object,
-        'VideoLink': None,
-        'VideoName': None,
-        'ChannelLink': None,
-        'ChannelName': None
-        }
-    """
-    #FILE FORMAT: (3 Possible scenarios)
-    #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
-    #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
-    #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
+# def YoutubeWatchHistory(takeoutPath):
+#     """
+#     Parses Youtube Watch History and returns a list that contains dictionaries for each entry found.
+#     Each dictionary in the list is of the following format:
+#         {
+#         'Product': 'Youtube',
+#         'Action': 'Watch',
+#         'TimeStamp': TimeStamp Object,
+#         'VideoLink': None,
+#         'VideoName': None,
+#         'ChannelLink': None,
+#         'ChannelName': None
+#         }
+#     """
+#     #FILE FORMAT: (3 Possible scenarios)
+#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
+#     #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
+#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP', 'Products:', '&emsp:Youtube'
 
-    checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
-    checkList = []
-    arr = parse(takeoutPath + '/YouTube and Youtube Music/history/watch-history.html', checkDict, checkList)
-    if arr == None:
-        return None
+#     checkDict = {'Products:', '&emsp;YouTube'} #eliminates the last 2 chunks of any given data sequence that may be found
+#     checkList = []
+#     arr = parse(takeoutPath + '/YouTube and Youtube Music/history/watch-history.html', checkDict, checkList)
+#     if arr == None:
+#         return None
+#     data = []
+#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP' - length of 7
+#     #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP' - length of 3
+#     #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP' - length of 5
+#     for i in range(len(arr)):
+#         currentEntry = []
+#         if( arr[i] == 'YouTube'): #indicates start of a new entry
+#             data.append({'Product': 'Youtube',
+#                         'Action': 'Watch',
+#                         'TimeStamp': None,
+#                         'VideoLink': None,
+#                         'VideoName': None,
+#                         'ChannelLink': None,
+#                         'ChannelName': None})
+#             j = 1
+#             while ( i+j < len(arr) and arr[i+j] != 'YouTube'): #goes until next entry
+#                 currentEntry.append(arr[i+j])
+#                 j += 1
+#         if (len(currentEntry) == 6): #lengths here are shortened by 1 as 'Youtube' is not appended to the currentEntry 
+#             #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP'
+#             try:
+#                 data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
+#                 data[len(data)-1]['VideoName'] = arr[i+3]
+#                 data[len(data)-1]['ChannelLink'] = arr[i+4]
+#                 data[len(data)-1]['ChannelName'] = arr[i+5]
+#                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+6], timeZone)
+#             except:
+#                 print('Error in Youtube Watch Data for len(6). Error Data:', arr[i:i+8], '\n')
+#         elif(len(currentEntry) == 4):
+#             #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP'
+#             #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'Deleted video', 'a href="YOUTUBE CHANNEL LINK"'
+#             #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'YouTube video name', 'a href="YOUTUBE CHANNEL LINK"'
+#             try:
+#                 if(arr[i+4] == 'a href="https://www.youtube.com/channel/UCBR8-60-B28hp2BmDPdntcQ"'):
+#                     data[len(data)-1]['VideoName'] = arr[i+3]
+#                     data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
+#                 else:
+#                     data[len(data)-1]['VideoLink'] = arr[i+3]
+#                     data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+4], timeZone)
+#             except:
+#                 print('Error in Youtube Watch Data for len(4). Error Data:', arr[i:i+6], '\n')
+#         elif(len(currentEntry) == 2):
+#             #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP'
+#             try:
+#                 data[len(data)-1]['VideoName'] = 'Watched a video that has been removed'
+#                 data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+2], timeZone)
+#             except:
+#                 print('Error in Youtube Watch Data for len(2). Error Data:', arr[i:i+4], '\n')
+#     return data
+
+def YoutubeWatchHistory(takeoutPath):
+    path = takeoutPath + '/YouTube and Youtube Music/history/watch-history.html'
+    # This target class could be changed by Google
+    # Good place to check if this breaks in the future
+    targetTagClass = 'content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1'
+    elements = [tag for tag in loadHTML(path) if tag.className == targetTagClass]
     data = []
-    #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP' - length of 7
-    #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP' - length of 3
-    #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP' - length of 5
-    for i in range(len(arr)):
-        currentEntry = []
-        if( arr[i] == 'YouTube'): #indicates start of a new entry
-            data.append({'Product': 'Youtube',
-                        'Action': 'Watch',
-                        'TimeStamp': None,
-                        'VideoLink': None,
-                        'VideoName': None,
-                        'ChannelLink': None,
-                        'ChannelName': None})
-            j = 1
-            while ( i+j < len(arr) and arr[i+j] != 'YouTube'): #goes until next entry
-                currentEntry.append(arr[i+j])
-                j += 1
-        if (len(currentEntry) == 6): #lengths here are shortened by 1 as 'Youtube' is not appended to the currentEntry 
-            #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO NAME', 'a href="CHANNEL LINK"', 'CHANNEL NAME', 'TIMESTAMP'
-            try:
-                data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
-                data[len(data)-1]['VideoName'] = arr[i+3]
-                data[len(data)-1]['ChannelLink'] = arr[i+4]
-                data[len(data)-1]['ChannelName'] = arr[i+5]
-                data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+6], timeZone)
-            except:
-                print('Error in Youtube Watch Data for len(6). Error Data:', arr[i:i+8], '\n')
-        elif(len(currentEntry) == 4):
-            #'Youtube', 'Watched\xa0', 'a href="VIDEO LINK"', 'VIDEO LINK', 'TIMESTAMP'
-            #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'Deleted video', 'a href="YOUTUBE CHANNEL LINK"'
-            #'YouTube', 'Watched\xa0', 'a href="VIDEO LINK"', 'YouTube video name', 'a href="YOUTUBE CHANNEL LINK"'
-            try:
-                if(arr[i+4] == 'a href="https://www.youtube.com/channel/UCBR8-60-B28hp2BmDPdntcQ"'):
-                    data[len(data)-1]['VideoName'] = arr[i+3]
-                    data[len(data)-1]['VideoLink'] = arr[i+2][7:-1] #eliminates "" and 'a href ='
-                else:
-                    data[len(data)-1]['VideoLink'] = arr[i+3]
-                    data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+4], timeZone)
-            except:
-                print('Error in Youtube Watch Data for len(4). Error Data:', arr[i:i+6], '\n')
-        elif(len(currentEntry) == 2):
-            #'Youtube', 'Watched a video that has been removed', 'TIMESTAMP'
-            try:
-                data[len(data)-1]['VideoName'] = 'Watched a video that has been removed'
-                data[len(data)-1]['TimeStamp'] = timeConvert.TimeStamp(arr[i+2], timeZone)
-            except:
-                print('Error in Youtube Watch Data for len(2). Error Data:', arr[i:i+4], '\n')
+    for element in elements:
+        elementDict = {'Product': 'Youtube',
+                       'Action': 'Watch',
+                       'TimeStamp': None,
+                       'VideoLink': None,
+                       'VideoName': None,
+                       'ChannelLink': None,
+                       'ChannelName': None
+                       }
+        tags = element.children
+        elementDict["TimeStamp"] = timeConvert.TimeStamp(tags[-1].text, timeZone)
+        # We only need the other tags for timestamp
+        # If we have both the video link and the channel, there are two a tags.
+        # If the video is private or removed, we will have one or zero tags
+        tags = [tag for tag in tags if tag.name == 'a']
+        if len(tags) == 2:
+            elementDict["VideoName"] = tags[0].text
+            elementDict["VideoLink"] = Tag.getLink(tags[0])
+            elementDict["ChannelName"] = tags[1].text
+            elementDict["ChannelLink"] = Tag.getLink(tags[1])
+        data.append(elementDict)
     return data
 
 def GoogleSearchHistory(takeoutPath):
