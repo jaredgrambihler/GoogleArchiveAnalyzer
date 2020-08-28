@@ -18,6 +18,7 @@ _TITLE_CLASS = 'mdl-typography--title'
 _ACTION_CLASS =  'content-cell mdl-cell mdl-cell--6-col mdl-typography--body-1'
 
 """Holds information such as prodcut, location, etc."""
+# TODO - add parsing for informatin class
 _INFORMATION_CLASS = 'content-cell mdl-cell mdl-cell--12-col mdl-typography--caption'
 
 class HistoryElement(ABC):
@@ -99,19 +100,24 @@ class HistoryElement(ABC):
             the title as a string
 
         Raises:
-            ValueError: if the tag we give isn't of the title class and doesn't have
-                a number of titleTags equal to 1.
+            ValueError: if the tag we give isn't of the title class or doesn't have
+                a number of titleTags equal to 1. This may also occur if the title
+                tag doesn't have any text.
         """
-        # TODO - check that text isn't empy
+        text = ""
         if tag.className == _TITLE_CLASS:
-            return tag.text
+            text = tag.text
         else:
             titleTags = tag.getTagsByClass(_TITLE_CLASS)
             if len(titleTags) == 1:
-                return titleTags[0].text
+                text = titleTags[0].text
             else:
                 raise ValueError("The given tag contained {} title tags, but it \
                                 should have exactly one".format(len(titleTags)))
+        if text != "":
+            return text
+        else:
+            raise ValueError("The given tags title class doesn't have any text.")
 
     @staticmethod
     def _getTimeStamp(tag: Tag) -> timeConvert.TimeStamp:

@@ -14,13 +14,11 @@ You can select to download as much or as little data as you want, but this code 
  
  Once the data is downloaded, it will be in a zip folder titled something like "Takeout-20200210" (The 2020 02 10 part represents a date).  Inside the zip is a folder simply titled "Takeout". Extract this folder to a directory of your choosing.
 
-Clone the repository to this same directory, so it should be as follows:
+The directory of your "Takeout" folder should be specified in run.py
 
-someDir/Takeout
+GoogleArchive.analyzeData takes in the relative or absolute path of your Takeout folder, so simply modify this path before running.
 
-someDir/GoogleArchiveAnalyzer
-
-By running "run.py" in GoogleArchiveAnalyzer, a folder in the same directory should be created:
+By running "run.py" in GoogleArchiveAnalyzer, a folder in the same directory as run.py should be created:
 
 someDir/GoogleArchiveAnalyzer/GoogleArchiveData
 
