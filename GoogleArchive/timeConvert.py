@@ -29,7 +29,7 @@ def getWeeks(data):
 
 class TimeStamp:
     """Timestamp class used to convert time from original Strings in google files.
-    
+
     Data:
          month
          day
@@ -40,18 +40,19 @@ class TimeStamp:
          second
     """
 
-    def __init__(self, timeString, timeZone):
+    # TODO - the time zone should come from the time stamp
+    def __init__(self, timeString):
         """
         Sole constructor for the class.
         Creates object and sets time zone to be correct.
+
         Args:
             timeString: String of the time as represented in Google documents.
-            timeZone: String representing time zone to adjust data to. Can be 'PST', 'MT', 'CT', 'EST', or 'UTC'
         """
         #Example of input String and format
         #Jan 11, 2015, 11:21:12 PM EDT
         #"%b %-d, %Y, %-I:%M:%S %p %Z"
-        self.timeZone = timeZone
+        # self.timeZone = timeZone
 
         dateList = timeString.split(',')
         self.month = dateList[0][0:3]
@@ -75,7 +76,7 @@ class TimeStamp:
             self.hour += 12
         elif(self.meridiem == "AM" and self.hour == 12):
             self.hour += 12
-        self.hour += timeZones[self.timeZone]
+        # self.hour += timeZones[self.timeZone]
         if (self.hour <= 0):
             self.hour += 24
         elif (self.hour > 24):
