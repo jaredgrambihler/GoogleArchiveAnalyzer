@@ -122,8 +122,6 @@ class HistoryElement(ABC):
     @staticmethod
     def _getTimeStamp(tag: Tag) -> timeConvert.TimeStamp:
         actionElement = HistoryElement._getActionElement(tag)
-        # TODO - the time zone is present in this string and TimeStamp should
-        # handle that just leave this 'PST' as a placeholder for now
         timeStamp = timeConvert.TimeStamp(actionElement.children[-1].text)
         return timeStamp
 

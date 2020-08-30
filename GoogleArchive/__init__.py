@@ -3,7 +3,6 @@
 This can be done through the analyzeData function that is present in this
 module.
 """
-
 import os
 import time
 from typing import Sequence, Callable
@@ -50,13 +49,13 @@ def analyzeData(takeoutPath: str):
     photos.photoURL(path, dir)
     purchase.getData(path, dir)
 
-    YoutubeSearchData = _parseData(parse.YoutubeSearchHistory,
+    YoutubeSearchData = parseData(parse.YoutubeSearchHistory,
                                    takeoutPath,
                                    "Youtube Search History")
-    YoutubeWatchData = _parseData(parse.YoutubeWatchHistory,
+    YoutubeWatchData = parseData(parse.YoutubeWatchHistory,
                                   takeoutPath,
                                   "Youtube Watch History")
-    GoogleSearchData = _parseData(parse.GoogleSearchHistory,
+    GoogleSearchData = parseData(parse.GoogleSearchHistory,
                                   takeoutPath,
                                   "Google Search History")
 
@@ -76,7 +75,7 @@ def analyzeData(takeoutPath: str):
 
     searchTerms.commonSearchTerms(allData, 25, path, dir)
 
-def _parseData(func: Callable[[str], Sequence[HistoryElement]],
+def parseData(func: Callable[[str], Sequence[HistoryElement]],
                takeoutPath: str,
                dataName: str
                ) -> Sequence[HistoryElement]:
@@ -101,8 +100,8 @@ def _parseData(func: Callable[[str], Sequence[HistoryElement]],
         data = func(takeoutPath)
     except FileNotFoundError:
         print("Could not find {} data".format(dataName))
-    except:
-        print("An unexcepted exception occured in parsing {}".format(dataName))
+    except Exception as e:
+        print("An unexcepted exception, {}, occured in parsing {}".format(e, dataName))
     finally:
         print("Took {}s to parse {}".format(time.time() - start, dataName))
     return data
