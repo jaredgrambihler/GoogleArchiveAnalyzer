@@ -1,19 +1,26 @@
-from GoogleArchive import timeConvert
-import datetime                         #Datetime on plots
-import os                               #Get current directory
-import matplotlib.pyplot as plt         #Create and save plots
-import matplotlib.dates as mdates       #Use datetime objects on plot
+"""Functions for graphing data."""
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+import datetime
+import os
+from collections import Counter
+from typing import Sequence, Optional
+
+from . import timeConvert
+from .historyElements import HistoryElement
 
 
-def freqHours(data, title, dir):
-    """
-    Saves a histogram for the frequency of the given data binned by each hour.
+def freqHours(data: Sequence[int], title: str, dir: str):
+    """Save a histogram for the frequency of the given data binned by each hour.
+
     Args:
-        Data: A list of hours (Integers 1-24)
-        Title: String for use in title. Title will be 'Frequency of [Title] (by hour)'
-        Dir: Directory to save output to. Saved at current working directory with given Dir appended.
+        data: A list of hours (Integers 1-24)
+        title: String for use in title. Title will be 'Frequency of [Title] (by hour)'
+        dir: Directory to save output to. Saved at current working directory with given Dir appended.
     """
-    plt.hist(data, bins = 24, range = (1,24))
+    times = timeConvert.getHours(data)
+    plt.hist(times, bins = 24, range = (1,24))
     plt.title('Frequency of ' + title + ' (by hour)')
     plt.margins(x = 0, y = .15)
     plt.xlabel('Time of Day (24 Hour)')
@@ -23,36 +30,28 @@ def freqHours(data, title, dir):
     plt.close()
 
 
-def freqPlot(data, interval, title, dir):
-    """
-    Saves a scatterplot of the given data with the value at each point specified by the sum of data
-    for that given interval (e.g. number of searches a month for each month)
+def freqPlot(data: Sequence[HistoryElement], interval: str, title: str, dir: str):
+    """Save a scatterplot of the given data.
+    
+    The value at each point specified by the sum of data for that given interval
+    (e.g. number of searches a month for each month)
+
     Args:
-        Data: A list of dictionaries that contain a 'TimeStamp' entry.
-              These 'TimeStamp' entries should be of type TimeStamp as defined in timeConvert.
-        Interval: String representing time to group data by. Can be day, month, or year (case insensitive)
-        Title: String to be used in title of the output plot. Title will be '[Title] Usage Per [Interval]'
-        Dir: Directory to save output to. Saved at current working directory with given Dir appended.
+        data: A Sequence of HistoryElements
+        interval: String representing time to group data by. Can be day, month, or year (case insensitive)
+        title: String to be used in title of the output plot. Title will be '[Title] Usage Per [Interval]'
+        dir: Directory to save output to. Saved at current working directory with given Dir appended.
     """
     interval = interval.lower()
-    if(interval not in {'day', 'month', 'year'}):
-        print('Invalid plotting arguments for Audio Usage Plot')
-        return 0
-    dates = {}
+    dates = Counter()
     month = {'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4,'May':5,'Jun':6,'Jul':7,
              'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
     for item in data:
-        if (item['TimeStamp'] != None):
+        if (item.timeStamp != None):
             date = item['TimeStamp'].toDateTime(interval)
-        if date in dates:
-            dates[date] += 1
-        else:
-            dates[date] = 1 
-    xs = []
-    ys = []
-    for date in dates:
-        xs.append(date)
-        ys.append(dates[date])
+        dates[date] += 1
+    xs = [date for date in dates]
+    ys = [dates[date] for date in dates]
     plt.plot_date(xs, ys)
     plt.xticks(rotation = 60)
     plt.title(title + ' Usage Per ' + interval)
@@ -61,15 +60,18 @@ def freqPlot(data, interval, title, dir):
     plt.close()
 
 
-def freqDays(data, title, dir):
-    """
-    Saves a histogram of frequency of the data by day of the week
+def freqDays(data: Sequence[HistoryElement], title: str, dir: str):
+    """Save a histogram of frequency of the data by day of the week.
+
     Args:
-        Data: List of days of the week, as defined in datetime
-        Title: String to be used in title. Title will be 'Frequency of [title] (by day of week)'
-        Dir: Directory to save output to. Saved at current working directory with given Dir appended.
+        data (Sequence[HistoryElement]): data to be plotted by frequency
+        title: String to be used in title. Title will be 'Frequency of [title]
+            (by day of week)'
+        dir: Directory to save output to. Saved at current working directory with
+            given Dir appended.
     """
-    plt.hist(data, bins=7)
+    weeks = timeConvert.getWeeks(data)
+    plt.hist(weeks, bins=7)
     plt.title('Frequency of ' + title + ' (by day of the week)')
     plt.xlabel('Day of the Week')
     plt.ylabel('Frequency(Cumulative, All Time)')
@@ -78,34 +80,54 @@ def freqDays(data, title, dir):
     plt.close()
 
 
-def displayDataPlots(data, freq = 'month', title = None, dir = ''):
-    """
-    Saves frequency by hour histogram, frequency by day of the week histogram,
+def displayDataPlots(data: Sequence[HistoryElement], freq: Optional[str] = 'month',
+                     title: Optional[str] = None, dir: Optional[str] = '') -> None:
+    """Save plots for the given data.
+    
+    Plots frequency by hour histogram, frequency by day of the week histogram,
     and a scatterplot of the frequency of the data over time.
     Prints information about data totals to console while running
 
     Args:
-	    Data: List of dictionaries. Dictionaries should contain 'Product', 'TimeStamp' and 'Action' entries.
-		      This dictionary storage format is defined in parse. Data returned from parse is compatible
-	    Freq (optional): String, default 'month'. Frequency to be used for the frequency plot of data over time. 
-		      Can be day, month, or year (case insensitive)
-	    Title (optional): Stirng of title to be used in graphs. None by default. If this is true, it will label the graphs
-		       according to the product and action associated with it. If a String is passed in, it will save the graphs
-		       using the given title to describe the data. (e.g. 'Frequency of [title] (by day of week)')
-	    Dir (optional): Directory to save output to. Saved at current working directory with given Dir appended. 
-		     Empty string by default.
+        data (Sequence[HistoryElements]) : elements to be plotted.
+        freq (str) (optional): String, default 'month'. Frequency to be used for the
+            frequency plot of data over time. Can be 'day', 'month', or 'year'
+            (case insensitive)
+        title (str) (optional): Title to be used in graphs. None by default.
+            If this is None, it will label the graphs according to the product
+            and action associated with it. If title is None, all HistoryElements
+            must be of the same product and action . If a String is passed in,
+            it will save the graphs using the given title to describe the data.
+            (e.g. 'Frequency of [title] (by day of week)').
+        dir (optional): Directory to save output to. Saved at current working
+            directory with given Dir appended. Empty string by default.
+
+    Raises:
+        ValueError: if title is None but all HistoryElemtents are not of the same
+            product and action, or if freq is not one of 'day', 'month', or 'year'
+        TypeError: if any of the given arguments do not match the type hints
     """
-    if title == None:
-        print("Total " + data[0]['Product'] + ' ' + data[0]['Action'] + ": " + str(len(data)))
-        times = timeConvert.getHours(data)
-        freqHours(times, title = data[0]['Product'] + ' ' + data[0]['Action'] + ' Data', dir = dir)
-        weeks = timeConvert.getWeeks(data)
-        freqDays(weeks, title = data[0]['Product'] + ' ' + data[0]['Action'] + ' Data',  dir = dir)
-        freqPlot(data, freq, data[0]['Product'] + ' ' + data[0]['Action'], dir = dir)
-    else:
-        print("Total " + title + ": " + str(len(data)))
-        times = timeConvert.getHours(data)
-        freqHours(times, title = title + ' Data', dir = dir)
-        weeks = timeConvert.getWeeks(data)
-        freqDays(weeks, title = title, dir = dir)
-        freqPlot(data, freq, title = title, dir=dir)
+    if not all(isinstance(x, HistoryElement) for x in data):
+        raise TypeError("At least one element of data is not a HistoryElement")
+    elif not isinstance(freq, str):
+        raise TypeError("freq must be of type str")
+    elif not isinstance(dir, str):
+        raise TypeError("dir must be of type str")
+    if title is None:
+        products = Counter(x.product for x in data)
+        actions = Counter(x.action for x in data)
+        if len(products) > 1:
+            raise ValueError("At least two types of products are present in data \
+                              Products present counter: {}".format(products))
+        elif len(actions) > 1:
+            raise ValueError("At least two types of actions are present in data \
+                              Actions present counter: {}".format(actions))
+        title =  data[0]['Product'] + ' ' + data[0]['Action']
+    if not isinstance(title, str):
+        raise TypeError("title must be of type str")
+    if freq not in {'day', 'month', 'year'}:
+        raise ValueError("Freq must be either 'day', 'month', or 'year'")
+    print("Total " + title + ": " + str(len(data)))
+    freqHours(data, title = title + ' Data', dir = dir)
+    freqDays(data, title = title, dir = dir)
+    freqPlot(data, freq, title = title, dir=dir)

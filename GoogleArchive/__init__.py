@@ -6,7 +6,10 @@ module.
 
 import os
 import time
+from typing import Sequence, Callable
+
 from . import parse, graph, purchase, photos, searchTerms
+from .historyElements import HistoryElement
 
 dir = '\GoogleArchiveData\\'
 path = os.getcwd()
@@ -60,10 +63,11 @@ def analyzeData(takeoutPath: str):
     allData = []
     if (YoutubeSearchData):
         allData.extend(YoutubeSearchData)
-        graph.displayDataPlots(YoutubeSearchData, dir = dir)
+        searchData = [x for x in YoutubeSearchData if x.action=="Searched for"]
+        graph.displayDataPlots(searchData, dir = dir)
     if (YoutubeWatchData):
         allData.extend(YoutubeWatchData)
-        graph.displayDataPlots(YoutubeWatchData, dir = dir)
+        graph.displayDataPlots(YoutubeWatchData, title="Youtube Watch Data", dir = dir)
     if (GoogleSearchData):
         allData.extend(GoogleSearchData)
         graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
@@ -72,23 +76,27 @@ def analyzeData(takeoutPath: str):
 
     searchTerms.commonSearchTerms(allData, 25, path, dir)
 
-def _parseData(func, takeoutPath, dataName):
+def _parseData(func: Callable[[str], Sequence[HistoryElement]],
+               takeoutPath: str,
+               dataName: str
+               ) -> Sequence[HistoryElement]:
     """Run the given parse function.
 
     Outputs information about time and errors.
 
     Args:
         func: the target function to use for parsing
-        takeoutPath (str): the path the the takeout folder
+        takeoutPath (str): the path the the takeout folder, pass through to the
+            parse function
         dataName (str): the name of the data, used in messages, such as
             (e.g. "google search")
 
     Returns:
-        Sequence of HistoryElements from parsing the object, or None if there
-        was an error in parsing (most likely that we couldn't find the file)
+        Sequence of HistoryElements from parsing the object, or an empty list if
+        there was an error in parsing (most likely that we couldn't find the file)
     """
     start = time.time()
-    data = None
+    data = []
     try:
         data = func(takeoutPath)
     except FileNotFoundError:
