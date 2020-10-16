@@ -7,17 +7,17 @@ import os
 import time
 from typing import Sequence, Callable
 
-from . import parse, graph, purchase, photos, searchTerms
+from . import parse, graph, photos, searchTerms
 from .historyElements import HistoryElement
 
-dir = '\GoogleArchiveData\\'
+outputDir = '\GoogleArchiveData\\'
 path = os.getcwd()
-if os.path.exists(path + dir):
-    print('Data directory already exists. Updated data will be written to ' + path + dir)
+if os.path.exists(path + outputDir):
+    print('Data directory already exists. Updated data will be written to ' + path + outputDir)
 else:
     try:
-        os.mkdir(path + dir)
-        print('Created Directory. Data will be wrriten to ' + path + dir)
+        os.mkdir(path + outputDir)
+        print('Created Directory. Data will be wrriten to ' + path + outputDir)
     except:
         print('Error in creating folder.')
         raise Exception
@@ -44,10 +44,9 @@ def analyzeData(takeoutPath: str):
     if not os.path.isdir(takeoutPath):
         raise ValueError("The takeoutPath {} must be a folder".format(takeoutPath))
 
-    # TODO - update photos and purchase to work on the same takeoutPath instead
-    # of still being relative
-    photos.photoURL(path, dir)
-    purchase.getData(path, dir)
+    photos.photoURL(takeoutPath, outputDir)
+    # TODO - can't fix purchase data right now b/c I have none
+    # purchase.getData(takeoutPath)
 
     YoutubeSearchData = parseData(parse.YoutubeSearchHistory,
                                    takeoutPath,
@@ -63,17 +62,17 @@ def analyzeData(takeoutPath: str):
     if (YoutubeSearchData):
         allData.extend(YoutubeSearchData)
         searchData = [x for x in YoutubeSearchData if x.action=="Searched for"]
-        graph.displayDataPlots(searchData, dir = dir)
+        graph.displayDataPlots(searchData, dir = outputDir)
     if (YoutubeWatchData):
         allData.extend(YoutubeWatchData)
-        graph.displayDataPlots(YoutubeWatchData, title="Youtube Watch Data", dir = dir)
+        graph.displayDataPlots(YoutubeWatchData, title="Youtube Watch Data", dir = outputDir)
     if (GoogleSearchData):
         allData.extend(GoogleSearchData)
-        graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = dir)
+        graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = outputDir)
     if(len(allData) > 0):
-        graph.displayDataPlots(allData, title = 'All Search and Watch', dir = dir)
+        graph.displayDataPlots(allData, title = 'All Search and Watch', dir = outputDir)
 
-    searchTerms.commonSearchTerms(allData, 25, path, dir)
+    searchTerms.commonSearchTerms(allData, 25, path, outputDir)
 
 def parseData(func: Callable[[str], Sequence[HistoryElement]],
                takeoutPath: str,
