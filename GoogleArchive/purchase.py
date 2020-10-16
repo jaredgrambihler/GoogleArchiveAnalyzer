@@ -1,5 +1,9 @@
-"""
+"""Currently a broken module.
+
+Can't test this until there is purchase data to test on.
+
 Writes all purchase data to a file.
+
 If no data is found, no file is created.
 Prints status of errors and numbers of files found while running.
 """
