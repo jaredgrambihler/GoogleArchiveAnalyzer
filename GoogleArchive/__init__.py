@@ -17,7 +17,7 @@ if outputDir.exists():
 else:
     try:
         outputDir.mkdir()
-        print('Created Directory. Data will be wrriten to ' + path + outputDir)
+        print('Created Directory. Data will be wrriten to {}'.format(outputDir))
     except:
         raise Exception('Error in creating folder.')
 
@@ -37,19 +37,16 @@ def analyzeData(takeoutPath: Union[str, Path]):
         FileNotFoundError: if the given path to takeout doesn't exist
         ValueError: if taekoutPath is not a folder
     """
-    if type(takeoutPath) != type(Path()):
+    if isinstance(takeoutPath, str):
         takeoutPath = Path(takeoutPath)
     if not takeoutPath.exists():
         raise FileNotFoundError("The takeout path {} does not exist".format(takeoutPath))
     if not takeoutPath.is_dir():
         raise ValueError("The takeoutPath {} must be a folder".format(takeoutPath))
 
-    # photos.photoURL(str(takeoutPath), str(outputDir))
+    photos.photoURL(takeoutPath, outputDir)
     # TODO - can't fix purchase data right now b/c I have none
     # purchase.getData(takeoutPath)
-
-    # TODO - do this conversion at the start of the method
-    # convert takeoutPath from string to Path
     
     YoutubeSearchData = parseData(parse.YoutubeSearchHistory,
                                    takeoutPath,
