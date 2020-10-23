@@ -6,17 +6,18 @@ Functions:
     GoogleSearchHistory
 """
 import os
+from pathlib import Path
 from typing import Sequence
 
 from . import timeConvert #Used to convert times found in files to TimeStamp objects
 from ._htmlParse import Tag, loadHTML
 from .historyElements import HistoryElement, SearchHistoryElement, WatchHistoryElement 
 
-def YoutubeSearchHistory(takeoutPath: str) -> Sequence[SearchHistoryElement]:
+def YoutubeSearchHistory(takeoutPath: Path) -> Sequence[SearchHistoryElement]:
     """Get Youtube Search History.
 
     Args:
-        takeoutPath (str): path to your takeout folder (e.g.
+        takeoutPath (Path): path to your takeout folder (e.g.
             my/relative/path/to/Takeout/)
     
     Returns:
@@ -32,11 +33,11 @@ def YoutubeSearchHistory(takeoutPath: str) -> Sequence[SearchHistoryElement]:
     youtubeSearchPath = 'YouTube and Youtube Music/history/search-history.html'
     return _getSearchHistoryElements(takeoutPath, youtubeSearchPath)
 
-def YoutubeWatchHistory(takeoutPath: str) -> Sequence[WatchHistoryElement]:
+def YoutubeWatchHistory(takeoutPath: Path) -> Sequence[WatchHistoryElement]:
     """Get Youtube Watch History.
 
     Args:
-        takeoutPath (str): path to your takeout folder (e.g.
+        takeoutPath (Path): path to your takeout folder (e.g.
             my/relative/path/to/Takeout/)
     
     Returns:
@@ -53,11 +54,11 @@ def YoutubeWatchHistory(takeoutPath: str) -> Sequence[WatchHistoryElement]:
     elements = _getElementsFromFile(takeoutPath, youtubeWatchPath)
     return [WatchHistoryElement(x) for x in elements]
 
-def GoogleSearchHistory(takeoutPath: str) -> Sequence[SearchHistoryElement]:
+def GoogleSearchHistory(takeoutPath: Path) -> Sequence[SearchHistoryElement]:
     """Get Google Search History.
 
     Args:
-        takeoutPath (str): path to your takeout folder (e.g.
+        takeoutPath (Path): path to your takeout folder (e.g.
             my/relative/path/to/Takeout/)
     
     Returns:
@@ -73,14 +74,14 @@ def GoogleSearchHistory(takeoutPath: str) -> Sequence[SearchHistoryElement]:
     googleSearchPath = 'My Activity/Search/MyActivity.html'
     return _getSearchHistoryElements(takeoutPath, googleSearchPath)
 
-def _getSearchHistoryElements(takeoutPath: str, filePath: str) -> Sequence[SearchHistoryElement]:
+def _getSearchHistoryElements(takeoutPath: Path, filePath: str) -> Sequence[SearchHistoryElement]:
     """Get Search History Elements.
 
     Intended to handle either Google or Youtube Search history.
 
     Args:
-        takeoutPath (str): the path to the Takeout folder. Should end with
-            'Takeout/' (e.g. 'some/path/to/Takeout/')
+        takeoutPath (Path): the path to the Takeout folder. Should end with
+            'Takeout' folder (e.g. 'some/path/to/Takeout/')
         filePath (str): the path to the file from within Takeout. Should end
             with the file, which must be a ".html" file
 
@@ -95,12 +96,12 @@ def _getSearchHistoryElements(takeoutPath: str, filePath: str) -> Sequence[Searc
     elements = _getElementsFromFile(takeoutPath, filePath)
     return [SearchHistoryElement(x) for x in elements]
 
-def _getElementsFromFile(takeoutPath: str, filePath: str) -> Sequence[Tag]:
+def _getElementsFromFile(takeoutPath: Path, filePath: str) -> Sequence[Tag]:
     """Get the head element of an HTML document at the given path.
 
     Args:
-        takeoutPath (str): the path to the Takeout folder. Should end with
-            'Takeout/' (e.g. 'some/path/to/Takeout/')
+        takeoutPath (Path): the path to the Takeout folder. Should end with
+            'Takeout' folder (e.g. 'some/path/to/Takeout/')
         filePath (str): the path to the file from within Takeout. Should end
             with the file, which must be a ".html" file
     
@@ -115,12 +116,12 @@ def _getElementsFromFile(takeoutPath: str, filePath: str) -> Sequence[Tag]:
     head = _getHeadElementFromFile(takeoutPath, filePath)
     return HistoryElement.getElementDivClass(head)
 
-def _getHeadElementFromFile(takeoutPath: str, filePath: str) -> Tag:
+def _getHeadElementFromFile(takeoutPath: Path, filePath: str) -> Tag:
     """Get the head element of an HTML document at the given path.
 
     Args:
-        takeoutPath (str): the path to the Takeout folder. Should end with
-            'Takeout/' (e.g. 'some/path/to/Takeout/')
+        takeoutPath (Path): the path to the Takeout folder. Should end with
+            'Takeout' folder
         filePath (str): the path to the file from within Takeout. Should end
             with the file, which must be a ".html" file
     
@@ -133,7 +134,7 @@ def _getHeadElementFromFile(takeoutPath: str, filePath: str) -> Tag:
     """
     if filePath.split(".")[-1] != "html":
         raise ValueError("The given filePath must lead to an HTML file")
-    path = takeoutPath + filePath
+    path = takeoutPath.joinpath(filePath)
     if not os.path.exists(path):
         raise FileNotFoundError("The path {} does not exist".format(path))
     return loadHTML(path)
