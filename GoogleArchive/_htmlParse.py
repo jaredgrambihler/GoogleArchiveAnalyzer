@@ -1,6 +1,7 @@
 """Functions for parsing HTML."""
 # %%
 from __future__ import annotations  # We need this to use Tag type in Tag class
+from pathlib import Path
 import re
 import os
 
@@ -204,7 +205,7 @@ def generateTags(html: str) -> Tag:
     texts = [text.strip() for text in texts]
     return _generateTags(tags, texts)
 
-def loadHTML(path: str) -> Tag:
+def loadHTML(path: Path) -> Tag:
     """Load HTML and return the head tag.
 
     Args:
@@ -216,9 +217,9 @@ def loadHTML(path: str) -> Tag:
     Raises:
         ValueError: if the given path doesn't exist
     """
-    if not os.path.exists(path):
-        raise ValueError("The given path {} does not exist".format(path))
-    with open(path, 'r', encoding="UTF-8") as f:
+    if not path.is_file():
+        raise ValueError("The given path {} does not exist or is not a file".format(path))
+    with path.open('r', encoding="UTF-8") as f:
         htmlString = f.read()
     return generateTags(htmlString)
 
