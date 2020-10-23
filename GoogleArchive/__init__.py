@@ -5,6 +5,7 @@ module.
 """
 import os
 import time
+from pathlib import Path
 from typing import Sequence, Callable
 
 from . import parse, graph, photos, searchTerms
@@ -48,6 +49,9 @@ def analyzeData(takeoutPath: str):
     # TODO - can't fix purchase data right now b/c I have none
     # purchase.getData(takeoutPath)
 
+    # TODO - do this conversion at the start of the method
+    # convert takeoutPath from string to Path
+    takeoutPath = Path(takeoutPath)
     YoutubeSearchData = parseData(parse.YoutubeSearchHistory,
                                    takeoutPath,
                                    "Youtube Search History")
@@ -74,8 +78,8 @@ def analyzeData(takeoutPath: str):
 
     searchTerms.commonSearchTerms(allData, 25, path, outputDir)
 
-def parseData(func: Callable[[str], Sequence[HistoryElement]],
-               takeoutPath: str,
+def parseData(func: Callable[[Path], Sequence[HistoryElement]],
+               takeoutPath: Path,
                dataName: str
                ) -> Sequence[HistoryElement]:
     """Run the given parse function.
@@ -84,7 +88,7 @@ def parseData(func: Callable[[str], Sequence[HistoryElement]],
 
     Args:
         func: the target function to use for parsing
-        takeoutPath (str): the path the the takeout folder, pass through to the
+        takeoutPath (Path): the path the the takeout folder, pass through to the
             parse function
         dataName (str): the name of the data, used in messages, such as
             (e.g. "google search")
