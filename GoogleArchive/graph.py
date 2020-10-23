@@ -4,6 +4,7 @@ import matplotlib.dates as mdates
 
 import datetime
 import os
+from pathlib import Path
 from collections import Counter
 from typing import Sequence, Optional
 
@@ -11,13 +12,13 @@ from . import timeConvert
 from .historyElements import HistoryElement
 
 
-def freqHours(data: Sequence[int], title: str, dir: str):
+def freqHours(data: Sequence[int], title: str, dir: Path):
     """Save a histogram for the frequency of the given data binned by each hour.
 
     Args:
         data: A list of hours (Integers 1-24)
         title: String for use in title. Title will be 'Frequency of [Title] (by hour)'
-        dir: Directory to save output to. Saved at current working directory with given Dir appended.
+        dir: Directory to save output to.
     """
     times = timeConvert.getHours(data)
     plt.hist(times, bins = 24, range = (1,24))
@@ -26,11 +27,11 @@ def freqHours(data: Sequence[int], title: str, dir: str):
     plt.xlabel('Time of Day (24 Hour)')
     plt.ylabel('Frequency(Cumulative, All Time)')
     plt.tight_layout()
-    plt.savefig(os.getcwd() + dir + 'Frequency of ' + title + ' (by hour)')
+    plt.savefig(str(dir) + '/Frequency of ' + title + ' (by hour)')
     plt.close()
 
 
-def freqPlot(data: Sequence[HistoryElement], interval: str, title: str, dir: str):
+def freqPlot(data: Sequence[HistoryElement], interval: str, title: str, dir: Path):
     """Save a scatterplot of the given data.
     
     The value at each point specified by the sum of data for that given interval
@@ -40,7 +41,7 @@ def freqPlot(data: Sequence[HistoryElement], interval: str, title: str, dir: str
         data: A Sequence of HistoryElements
         interval: String representing time to group data by. Can be day, month, or year (case insensitive)
         title: String to be used in title of the output plot. Title will be '[Title] Usage Per [Interval]'
-        dir: Directory to save output to. Saved at current working directory with given Dir appended.
+        dir: Directory to save output to.
     """
     interval = interval.lower()
     dates = Counter()
@@ -56,19 +57,18 @@ def freqPlot(data: Sequence[HistoryElement], interval: str, title: str, dir: str
     plt.xticks(rotation = 60)
     plt.title(title + ' Usage Per ' + interval)
     plt.tight_layout()
-    plt.savefig(os.getcwd() + dir + title + ' Usage Per ' + interval)
+    plt.savefig(str(dir) + "/" + title + ' Usage Per ' + interval)
     plt.close()
 
 
-def freqDays(data: Sequence[HistoryElement], title: str, dir: str):
+def freqDays(data: Sequence[HistoryElement], title: str, dir: Path):
     """Save a histogram of frequency of the data by day of the week.
 
     Args:
         data (Sequence[HistoryElement]): data to be plotted by frequency
         title: String to be used in title. Title will be 'Frequency of [title]
             (by day of week)'
-        dir: Directory to save output to. Saved at current working directory with
-            given Dir appended.
+        dir: Directory to save output to.
     """
     weeks = timeConvert.getWeeks(data)
     plt.hist(weeks, bins=7)
@@ -76,12 +76,12 @@ def freqDays(data: Sequence[HistoryElement], title: str, dir: str):
     plt.xlabel('Day of the Week')
     plt.ylabel('Frequency(Cumulative, All Time)')
     plt.tight_layout()
-    plt.savefig(os.getcwd() + dir + 'Frequency of ' + title + ' (by day of the week)')
+    plt.savefig(str(dir) + '/Frequency of ' + title + ' (by day of the week)')
     plt.close()
 
 
 def displayDataPlots(data: Sequence[HistoryElement], freq: Optional[str] = 'month',
-                     title: Optional[str] = None, dir: Optional[str] = '') -> None:
+                     title: Optional[str] = None, dir: Optional[Path] = None) -> None:
     """Save plots for the given data.
     
     Plots frequency by hour histogram, frequency by day of the week histogram,
@@ -99,20 +99,22 @@ def displayDataPlots(data: Sequence[HistoryElement], freq: Optional[str] = 'mont
             must be of the same product and action . If a String is passed in,
             it will save the graphs using the given title to describe the data.
             (e.g. 'Frequency of [title] (by day of week)').
-        dir (optional): Directory to save output to. Saved at current working
-            directory with given Dir appended. Empty string by default.
+        dir (Path) (optional): Directory to save output to. Current working
+            directory if None.
 
     Raises:
         ValueError: if title is None but all HistoryElemtents are not of the same
             product and action, or if freq is not one of 'day', 'month', or 'year'
         TypeError: if any of the given arguments do not match the type hints
     """
+    if dir is None:
+        dir = Path.cwd()
     if not all(isinstance(x, HistoryElement) for x in data):
         raise TypeError("At least one element of data is not a HistoryElement")
     elif not isinstance(freq, str):
         raise TypeError("freq must be of type str")
-    elif not isinstance(dir, str):
-        raise TypeError("dir must be of type str")
+    elif not isinstance(dir, Path):
+        raise TypeError("dir must be of type Path")
     if title is None:
         products = Counter(x.product for x in data)
         actions = Counter(x.action for x in data)
