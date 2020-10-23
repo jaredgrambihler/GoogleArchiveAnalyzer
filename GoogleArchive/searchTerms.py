@@ -1,14 +1,13 @@
 """Module containing commonSearchTerms function and its helper functions"""
 
-def commonSearchTerms(searchData, numTerms, path, dir):
+def commonSearchTerms(searchData, numTerms, dir):
     """
     Finds a variable number of the most commonly searched terms across all data.
     Outputs data to a text file, Common_Searches.txt
     Args:
         searchData: List of dictionaries as created in parse. Used to evaluate search terms.
         numTerms: Integer specifying the number of terms to be output
-        path: String, Path to current working directory
-        dir: String, Subdirectory to be used to store file
+        dir: Path, where to save the file
     """
     searchNums = {}
     for data in searchData:
@@ -49,19 +48,18 @@ def commonSearchTerms(searchData, numTerms, path, dir):
                     break
     for i in range(len(topSearches)):
         topSearches[i] = (topSearches[i], searchNums[topSearches[i]]) #adds search nums into list
-    logTopSearches(topSearches, path, dir)
+    logTopSearches(topSearches, dir)
 
 
-def logTopSearches(topSearches, path, dir):
+def logTopSearches(topSearches, dir):
     """
     Helper function for commonSearchTerms.
     Saves top searches to a file as Common_Searches.txt
     Args:
         topSearches: List of top searches, with each entry being a tuple of the search and the frequency
-        path: path to current working directory
         dir: path to subdirectory to store file at
     """
-    f = open(path + dir + 'Common_Searches.txt', 'w')
+    f = dir.joinpath("Common_Searches.txt").open("w")
     f.write('Top Searches:\n')
     for search in topSearches:
         f.write(str(search[0]) + ' , Frequency:' + str(search[1]) + '\n')
