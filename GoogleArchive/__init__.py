@@ -5,24 +5,23 @@ module.
 """
 import os
 import time
-from typing import Sequence, Callable
+from pathlib import Path
+from typing import Sequence, Callable, Union
 
 from . import parse, graph, photos, searchTerms
 from .historyElements import HistoryElement
 
-outputDir = '\GoogleArchiveData\\'
-path = os.getcwd()
-if os.path.exists(path + outputDir):
-    print('Data directory already exists. Updated data will be written to ' + path + outputDir)
+outputDir = Path.cwd().joinpath('GoogleArchiveData')
+if outputDir.exists():
+    print('Data directory already exists. Updated data will be written to {}'.format(outputDir))
 else:
     try:
-        os.mkdir(path + outputDir)
-        print('Created Directory. Data will be wrriten to ' + path + outputDir)
+        outputDir.mkdir()
+        print('Created Directory. Data will be wrriten to {}'.format(outputDir))
     except:
-        print('Error in creating folder.')
-        raise Exception
+        raise Exception('Error in creating folder.')
 
-def analyzeData(takeoutPath: str):
+def analyzeData(takeoutPath: Union[str, Path]):
     """Do analysis of all data.
 
     Runs analysis of PhotoURL, Purchase Data
@@ -31,23 +30,24 @@ def analyzeData(takeoutPath: str):
     Data is output via .png and .txt files to the GoogleArchiveData directory
 
     Args:
-        takeoutPath (str): Relative or absolute path to takeout folder.
-            Whether relative or absolute, it is important that this ends with a
-            '/' (e.g. 'my/path/to/Takeout/)
+        takeoutPath (Union[str, Path]): Relative or absolute path to takeout folder.
+            Can be either a string or a Path.
     
     Raises:
         FileNotFoundError: if the given path to takeout doesn't exist
         ValueError: if taekoutPath is not a folder
     """
-    if not os.path.exists(takeoutPath):
+    if isinstance(takeoutPath, str):
+        takeoutPath = Path(takeoutPath)
+    if not takeoutPath.exists():
         raise FileNotFoundError("The takeout path {} does not exist".format(takeoutPath))
-    if not os.path.isdir(takeoutPath):
+    if not takeoutPath.is_dir():
         raise ValueError("The takeoutPath {} must be a folder".format(takeoutPath))
 
     photos.photoURL(takeoutPath, outputDir)
     # TODO - can't fix purchase data right now b/c I have none
     # purchase.getData(takeoutPath)
-
+    
     YoutubeSearchData = parseData(parse.YoutubeSearchHistory,
                                    takeoutPath,
                                    "Youtube Search History")
@@ -72,10 +72,10 @@ def analyzeData(takeoutPath: str):
     if(len(allData) > 0):
         graph.displayDataPlots(allData, title = 'All Search and Watch', dir = outputDir)
 
-    searchTerms.commonSearchTerms(allData, 25, path, outputDir)
+    searchTerms.commonSearchTerms(allData, 25, outputDir)
 
-def parseData(func: Callable[[str], Sequence[HistoryElement]],
-               takeoutPath: str,
+def parseData(func: Callable[[Path], Sequence[HistoryElement]],
+               takeoutPath: Path,
                dataName: str
                ) -> Sequence[HistoryElement]:
     """Run the given parse function.
@@ -84,7 +84,7 @@ def parseData(func: Callable[[str], Sequence[HistoryElement]],
 
     Args:
         func: the target function to use for parsing
-        takeoutPath (str): the path the the takeout folder, pass through to the
+        takeoutPath (Path): the path the the takeout folder, pass through to the
             parse function
         dataName (str): the name of the data, used in messages, such as
             (e.g. "google search")
