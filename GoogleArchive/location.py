@@ -8,6 +8,9 @@ def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     Args:
         locationPath (Path): Path to location history folder
         outputFolder (Path): Path to output data to
+
+    Raises:
+        KeyError if the given json file has unexpected key names.
     """
     locationFile = locationPath.joinpath("Location History.json")
     if not locationFile.exists():
@@ -32,7 +35,13 @@ def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     'longitudeE7'
     'timestampMs'
     """
-    # TODO - actually analyze it
+    with locationFile.open("r") as f:
+        contents = json.load(f)
+    try:
+        locations = contents['location']
+    except KeyError:
+        raise KeyError("Location History.json does not have 'location' key")
+    
 
 def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     """Analyze Semantic Location History folder.
@@ -58,5 +67,8 @@ def locationHistory(takeoutPath: Path, outputFolder: Path) -> None:
     if not locationPath.is_dir():
         print("'Location History' folder Location History was not found.")
         return
-    analyzeLocationHistory(locationPath, outputFolder)
+    try:
+        analyzeLocationHistory(locationPath, outputFolder)
+    except KeyError:
+        print("Location History.json was not formatted as expected. Not analyzing.")
     analyzeSemanticLocationHistory(locationPath, outputFolder)
