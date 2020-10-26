@@ -3,6 +3,12 @@ import json
 from pathlib import Path
 import pandas as pd
 
+def getLatLong(d):
+    """Get latitude and longitude from dict."""
+    latitude = d['latitudeE7'] / 10000000
+    longitude = d['longitudeE7'] / 10000000
+    return latitude, longitude
+
 def locationHistoryToDataFrame(locations: dict) -> pd.DataFrame:
     """Convert location history to a DataFrame."""
     """
@@ -32,8 +38,7 @@ def locationHistoryToDataFrame(locations: dict) -> pd.DataFrame:
     for location in locations:
         try:
             time = location['timestampMs']
-            latitude = location['latitudeE7'] / 10000000
-            longitude = location['longitudeE7'] / 10000000
+            latitude, longitude = getLatLong(location)
             accuracy = location['accuracy']
         except KeyError:
             errors += 1
