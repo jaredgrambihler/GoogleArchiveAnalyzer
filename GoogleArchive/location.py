@@ -1,5 +1,6 @@
 """Analyze Location History."""
 import json
+from typing import Tuple
 from pathlib import Path
 import pandas as pd
 
@@ -114,7 +115,7 @@ def getActivitySegment(timeLineEvent: dict) -> dict:
             "activityType":activityType,
             "confidence":confidence}
 
-def getPlaceVisit(timelineEvent: dict) -> dict:
+def getPlaceVisit(timeLineEvent: dict) -> dict:
     """Convert timeline of place visit to our own dict.
 
     Args:
@@ -165,7 +166,7 @@ def analyzeSematicJson(contents: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
                 errors += 1
         elif "placeVisit" in timeLineEvent:
             try:
-                placeVists.append(getPlaceVisit(timeLineEvent))
+                placeVisits.append(getPlaceVisit(timeLineEvent))
             except KeyError:
                 errors += 1
         else:
@@ -174,7 +175,7 @@ def analyzeSematicJson(contents: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
         print("Encountered {} errors while parsing semantic location history".format(errors))
     if unknown != 0:
         print("Found {} unknown entires in semantic location history".format(unknown))
-    return pd.DataFrame(activitySegments), pd.DataFrame(placeVists)
+    return pd.DataFrame(activitySegments), pd.DataFrame(placeVisits)
 
 def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     """Analyze Semantic Location History folder.
@@ -192,7 +193,10 @@ def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> No
     for semanticFile in semanticFolder.rglob("[0-9]" * 4 + "*.json"):
         with semanticFile.open("r") as f:
             contents = json.load(f)
-            activityDf, placeVistDf = analyzeSematicJson(contents)
+            activityDf, placeVisitDf = analyzeSematicJson(contents)
+            activityDfs.append(activityDf)
+            placeVisitDfs.append(placeVisitDf)
+    # TODO - check for empty lists
     activityDf = pd.concat(activityDfs)
     placeVistDf = pd.concat(placeVisitDfs)
     # TODO - use dataframe to analyze
