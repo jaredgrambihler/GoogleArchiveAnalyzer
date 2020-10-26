@@ -1,21 +1,10 @@
 """Analyze Location History."""
 import json
 from pathlib import Path
+import pandas as pd
 
-def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
-    """Analyze Location History.json file.
-
-    Args:
-        locationPath (Path): Path to location history folder
-        outputFolder (Path): Path to output data to
-
-    Raises:
-        KeyError if the given json file has unexpected key names.
-    """
-    locationFile = locationPath.joinpath("Location History.json")
-    if not locationFile.exists():
-        print("Could not find location history file.")
-        return
+def locationHistoryToDataFrame(locations: dict) -> pd.DataFrame:
+    """Convert location history to a DataFrame."""
     """
     Possible keys
 
@@ -35,13 +24,54 @@ def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     'longitudeE7'
     'timestampMs'
     """
+    errors = 0
+    times = []
+    latitudes = []
+    longitudes = []
+    accuracies = []
+    for location in locations:
+        try:
+            time = location['timestampMs']
+            latitude = location['latitudeE7'] / 10000000
+            longitude = location['longitudeE7'] / 10000000
+            accuracy = location['accuracy']
+        except KeyError:
+            errors += 1
+            continue
+        times.append(time)
+        latitudes.append(latitude)
+        longitudes.append(longitude)
+        accuracies.append(accuracy)
+    if errors != 0:
+        print("{} errors in finding keys for locations".format(errors))
+    return pd.DataFrame({"Time": times,
+                         "Accuracy": accuracies,
+                         "Latitude": latitudes,
+                         "Longitude":longitudes
+                         })
+
+def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
+    """Analyze Location History.json file.
+
+    Args:
+        locationPath (Path): Path to location history folder
+        outputFolder (Path): Path to output data to
+
+    Raises:
+        KeyError if the given json file has unexpected key names.
+    """
+    locationFile = locationPath.joinpath("Location History.json")
+    if not locationFile.exists():
+        print("Could not find location history file.")
+        return
+    
     with locationFile.open("r") as f:
         contents = json.load(f)
     try:
         locations = contents['location']
     except KeyError:
         raise KeyError("Location History.json does not have 'location' key")
-    
+    df = locationHistoryToDataFrame(locations)
 
 def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     """Analyze Semantic Location History folder.
