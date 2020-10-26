@@ -78,6 +78,71 @@ def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
         raise KeyError("Location History.json does not have 'location' key")
     df = locationHistoryToDataFrame(locations)
 
+def getActivitySegment(timeLineEvent: dict) -> dict:
+    """Convert timeline of activity segment to our own dict.
+
+    Args:
+        timeLineEvent (dict): the dictionary for the timeline event
+
+    Returns:
+        A new dict with desired fields
+
+    Raises:
+        KeyError: if a desired field isn't found
+    """
+    activitySegment = timeLineEvent["activitySegment"]
+    startLocation = activitySegment["startLocation"]
+    endLocation = activitySegment["endLocation"]
+    startLatitude, startLongitude = getLatLong(startLocation)
+    endLatitude, endLongitude = getLatLong(endLocation)
+    startDeviceTag = startLocation['sourceInfo']['deviceTag']
+    endDeviceTag = endLocation['sourceInfo']['deviceTag']
+    startTime = activitySegment['duration']['startTimestampMs']
+    endTime = activitySegment['duration']['endTimestampMs']
+    distance = activitySegment['distance']
+    activityType = activitySegment['activityType']
+    confidence = activitySegment['confidence']
+    return {"StartLatitude":startLatitude,
+            "startLongitude":startLongitude,
+            "endLatitude":endLatitude,
+            "endLongitude":endLongitude,
+            "startDeviceTag":startDeviceTag,
+            "endDeviceTag":endDeviceTag,
+            "startTime":startTime,
+            "endTime":endTime,
+            "distance":distance,
+            "activityType":activityType,
+            "confidence":confidence}
+
+def getPlaceVisit(timelineEvent: dict) -> dict:
+    """Convert timeline of place visit to our own dict.
+
+    Args:
+        timeLineEvent (dict): the dictionary for the place visit
+
+    Returns:
+        A new dict with desired fields
+
+    Raises:
+        KeyError: if a desired field isn't found
+    """
+    placeVisit = timeLineEvent['placeVisit']
+    location = placeVisit['location']
+    latitude, longitude = getLatLong(location)
+    address = location['address']
+    name = location['name']
+    # semanticType = location['semanticType']
+    locationConfidence = location['locationConfidence']
+    startTime = placeVisit['duration']['startTimestampMs']
+    endTime = placeVisit['duration']['endTimestampMs']
+    return {"latitude":latitude,
+            "longitude": longitude,
+            "address": address,
+            "name": name,
+            "locationConfidence": locationConfidence,
+            "startTime": startTime,
+            "endTime": endTime}
+
 def analyzeSematicJson(contents: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Analyze the Semantic Location History JSON files.
 
@@ -87,7 +152,29 @@ def analyzeSematicJson(contents: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
         Two dataframes. The first is for activities and the second is for
         place vists.
     """
-    pass
+    timeline = contents['timelineObjects']
+    errors = 0
+    unknown = 0
+    activitySegments = []
+    placeVisits = []
+    for timeLineEvent in timeline:
+        if 'activitySegment' in timeLineEvent:
+            try:
+                activitySegments.append(getActivitySegment(timeLineEvent))
+            except KeyError:
+                errors += 1
+        elif "placeVisit" in timeLineEvent:
+            try:
+                placeVists.append(getPlaceVisit(timeLineEvent))
+            except KeyError:
+                errors += 1
+        else:
+            unknown += 1
+    if errors != 0:
+        print("Encountered {} errors while parsing semantic location history".format(errors))
+    if unknown != 0:
+        print("Found {} unknown entires in semantic location history".format(unknown))
+    return pd.DataFrame(activitySegments), pd.DataFrame(placeVists)
 
 def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     """Analyze Semantic Location History folder.
