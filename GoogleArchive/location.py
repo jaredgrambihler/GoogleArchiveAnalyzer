@@ -78,6 +78,17 @@ def analyzeLocationHistory(locationPath: Path, outputFolder: Path) -> None:
         raise KeyError("Location History.json does not have 'location' key")
     df = locationHistoryToDataFrame(locations)
 
+def analyzeSematicJson(contents: dict) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Analyze the Semantic Location History JSON files.
+
+    Args:
+        contents (dict): the contents of the json file
+    Returns:
+        Two dataframes. The first is for activities and the second is for
+        place vists.
+    """
+    pass
+
 def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> None:
     """Analyze Semantic Location History folder.
 
@@ -89,7 +100,15 @@ def analyzeSemanticLocationHistory(locationPath: Path, outputFolder: Path) -> No
     if not semanticFolder.exists():
         print("Could not find Semantic Location History file.")
         return
-    # TODO - actually analyze it
+    activityDfs = []
+    placeVisitDfs = []
+    for semanticFile in semanticFolder.rglob("[0-9]" * 4 + "*.json"):
+        with semanticFile.open("r") as f:
+            contents = json.load(f)
+            activityDf, placeVistDf = analyzeSematicJson(contents)
+    activityDf = pd.concat(activityDfs)
+    placeVistDf = pd.concat(placeVisitDfs)
+    # TODO - use dataframe to analyze
 
 def locationHistory(takeoutPath: Path, outputFolder: Path) -> None:
     """Analyze location history.
