@@ -8,7 +8,7 @@ Classes:
     WatchHistoryElement
 """
 from abc import ABC
-from typing import Sequence
+from typing import Sequence, Tuple
 
 from . import timeConvert
 from ._htmlParse import Tag
@@ -114,10 +114,8 @@ class HistoryElement(ABC):
             else:
                 raise ValueError("The given tag contained {} title tags, but it \
                                 should have exactly one".format(len(titleTags)))
-        if text != "":
-            return text
-        else:
-            raise ValueError("The given tags title class doesn't have any text.")
+        # the text may be empty, but sometimes text doesn't exist
+        return text
 
     @staticmethod
     def _getTimeStamp(tag: Tag) -> timeConvert.TimeStamp:
@@ -139,6 +137,85 @@ class HistoryElement(ABC):
         else:
             raise ValueError("The given tag has more than one element for the action.")
 
+
+class ChromeElement(HistoryElement):
+    """Defines an element from Chrome activity.
+
+    Attributes:
+        product
+        action
+        timeStamp
+        name
+        url
+    """
+
+    def __init__(self, tag: Tag):
+        """Create a ChromeElement.
+
+        Args:
+            tag (Tag): the head tag of the element.
+
+        Raises:
+            ValueError: if the given tag is not of the porper class. The desired
+                class is the elementDivClass attribute of the class
+        """
+        super().__init__(tag)
+        self._name, self._url = ChromeElement._getNameAndURL(tag)
+
+    @property
+    def name(self) -> str:
+        """Website name."""
+        return self._name 
+    
+    @property
+    def url(self) -> str:
+        """Website URL."""
+        return self._url
+    
+    def __getitem__(self, item):
+        """Get an item.
+
+        Can be either 'product', 'action', 'timeStamp', 'name' or 'url'
+
+        Args:
+            item (str): the item to get. Case insensitive
+        
+        Returns:
+            the value of the item
+        """
+        item = item.lower()
+        if item == 'name':
+            return self.name
+        elif item == 'url':
+            return self.url
+        else:
+            return super().__getitem__(item)
+
+    @staticmethod
+    def _getNameAndURL(tag: Tag) -> Tuple[str, str]:
+        """Get name and URL from a tag.
+
+        Args:
+            tag (Tag): the tag to get the name and URL from
+
+        Returns:
+            Tuple of name, url
+        """
+        data = HistoryElement._getActionElement(tag)
+        linkTags = data.getTagsByName("a")
+        if len(linkTags) == 1:
+            linkTag = linkTags[0]
+            name = linkTag.text
+            url = Tag.getLink(linkTag)
+            # google puts this prefix on every URL, but we don't want it
+            urlPrefix = 'https://www.google.com/url?q'
+            url = url[len(urlPrefix):]
+        elif data.text == "Used Chrome":
+            name, url = "", ""
+        else:
+            raise ValueError("The given tag does not have a single <a> tag")
+        return name, url
+        
 
 class SearchHistoryElement(HistoryElement):
     """Defines an element from Search History on either Google or Youtube.

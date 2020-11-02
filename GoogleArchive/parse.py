@@ -11,7 +11,7 @@ from typing import Sequence
 
 from . import timeConvert #Used to convert times found in files to TimeStamp objects
 from ._htmlParse import Tag, loadHTML
-from .historyElements import HistoryElement, SearchHistoryElement, WatchHistoryElement 
+from .historyElements import HistoryElement, SearchHistoryElement, WatchHistoryElement, ChromeElement 
 
 def YoutubeSearchHistory(takeoutPath: Path) -> Sequence[SearchHistoryElement]:
     """Get Youtube Search History.
@@ -73,6 +73,26 @@ def GoogleSearchHistory(takeoutPath: Path) -> Sequence[SearchHistoryElement]:
     """
     googleSearchPath = 'My Activity/Search/MyActivity.html'
     return _getSearchHistoryElements(takeoutPath, googleSearchPath)
+
+def chromeHistory(takeoutPath: Path) -> Sequence[HistoryElement]:
+    """Get chrome history.
+
+    Args:
+        takeoutPath (Path): path to your takeout folder (e.g.
+            my/relative/path/to/Takeout/)
+    
+    Returns:
+        Sequence of HistoryElement for each entry of Chrome activity.
+
+    Raises:
+        FileNotFoundError: if the Chrome file cannot be found. This is either
+            because the specified path to takeout is wrong, chrome history
+            wasn't included in your download, or Google changed the name of a
+            folder/file since I last updated this
+    """
+    chromePath = "My Activity/Chrome/MyActivity.html"
+    elements = _getElementsFromFile(takeoutPath, chromePath)
+    return [ChromeElement(x) for x in elements]
 
 def _getSearchHistoryElements(takeoutPath: Path, filePath: str) -> Sequence[SearchHistoryElement]:
     """Get Search History Elements.
