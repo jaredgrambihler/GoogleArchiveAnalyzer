@@ -52,12 +52,14 @@ class Tag:
         return tag._getTagProperty("href")
 
     def _getTagProperty(self, name: str) -> str:
-        # TODO - figure out what chars are valid in a me
-        tagRegex = name + '="[a-zA-Z0-9\-. ]+"'
+        # TODO - this will stop at an escaped quote
+        tagRegex = name + '="[^"]*"'
         names = re.findall(tagRegex, self._tagString)
         if names:
             # TODO - add some sort of check here that we don't find multiple matches
-            return names[0].split("=")[1].replace('"', '')
+            value = "".join(names[0].split("=")[1:])
+            # remove first and last quotes
+            return value[1:-1]
         return ""
 
     @property
