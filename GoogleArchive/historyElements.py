@@ -114,10 +114,8 @@ class HistoryElement(ABC):
             else:
                 raise ValueError("The given tag contained {} title tags, but it \
                                 should have exactly one".format(len(titleTags)))
-        if text != "":
-            return text
-        else:
-            raise ValueError("The given tags title class doesn't have any text.")
+        # the text may be empty, but sometimes text doesn't exist
+        return text
 
     @staticmethod
     def _getTimeStamp(tag: Tag) -> timeConvert.TimeStamp:
