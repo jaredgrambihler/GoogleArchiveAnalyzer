@@ -57,6 +57,9 @@ def analyzeData(takeoutPath: Union[str, Path]):
     GoogleSearchData = parseData(parse.GoogleSearchHistory,
                                   takeoutPath,
                                   "Google Search History")
+    ChromeData = parseData(parse.chromeHistory,
+                           takeoutPath,
+                           "Google Chrome History")
 
     allData = []
     if (YoutubeSearchData):
@@ -69,6 +72,9 @@ def analyzeData(takeoutPath: Union[str, Path]):
     if (GoogleSearchData):
         allData.extend(GoogleSearchData)
         graph.displayDataPlots(GoogleSearchData, title = 'Google Search', dir = outputDir)
+    if (ChromeData):
+        allData.extend(ChromeData)
+        graph.displayDataPlots(ChromeData, title = "Google Chrome", dir = outputDir)
     if(len(allData) > 0):
         graph.displayDataPlots(allData, title = 'All Search and Watch', dir = outputDir)
 
