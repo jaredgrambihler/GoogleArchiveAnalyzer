@@ -207,6 +207,9 @@ class ChromeElement(HistoryElement):
             linkTag = linkTags[0]
             name = linkTag.text
             url = Tag.getLink(linkTag)
+            # google puts this prefix on every URL, but we don't want it
+            urlPrefix = 'https://www.google.com/url?q'
+            url = url[len(urlPrefix):]
         elif data.text == "Used Chrome":
             name, url = "", ""
         else:
